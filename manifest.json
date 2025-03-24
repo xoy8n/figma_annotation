@@ -1,12 +1,12 @@
 {
-  "name": "Webpack + React Sample",
-  "id": "webpack-react-sample",
+  "name": "test00",
+  "id": "test00",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/ui.html",
-  "editorType": ["figma", "figjam"],
+  "editorType": ["figma"],
   "networkAccess": {
     "allowedDomains": ["none"]
-  },
-  "documentAccess": "dynamic-page"
+  }
 }
+     

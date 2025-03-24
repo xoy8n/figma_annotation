@@ -27,7 +27,7 @@ module.exports = (env, argv) => ({
       // Enables including CSS by doing "import './file.css'" in your TypeScript code
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       // Allows you to use "<%= require('./file.svg') %>" in your HTML code to get a data URI
       // { test: /\.(png|jpg|gif|webp|svg|zip)$/, loader: [{ loader: 'url-loader' }] }
@@ -35,11 +35,20 @@ module.exports = (env, argv) => ({
         test: /\.svg/,
         type: 'asset/inline',
       },
+      {
+        test: /\.wasm$/,
+        type: 'webassembly/async',
+      },
     ],
   },
 
   // Webpack tries these extensions for you if you omit the extension like "import './file'"
-  resolve: { extensions: ['.tsx', '.ts', '.jsx', '.js'] },
+  resolve: { 
+    extensions: ['.tsx', '.ts', '.jsx', '.js'],
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
 
   output: {
     filename: (pathData) => {
@@ -50,6 +59,13 @@ module.exports = (env, argv) => ({
     path: path.resolve(__dirname, 'dist'), // Compile into a folder called "dist"
     // Clean the output directory before emit.
     clean: true,
+  },
+
+  experiments: {
+    asyncWebAssembly: true,
+    layers: true,
+    syncWebAssembly: true,
+    topLevelAwait: true,
   },
 
   // Tells Webpack to generate "ui.html" and to inline "ui.ts" into it
