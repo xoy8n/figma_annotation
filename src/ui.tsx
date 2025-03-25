@@ -2,17 +2,17 @@ import React, { Fragment, useEffect, useRef, useState } from "react";
 import * as ReactDOM from "react-dom/client";
 import "./ui.css";
 import { Messages, sendMessage } from "./services/messageService";
-import { Button } from "./components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "./components/ui/popover";
-import { Input } from "./components/ui/input";
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 
-import SidePanelComponent from "./components/sidePanel";
+import SidePanelComponent from "@/components/sidePanel";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import Tiptap from "./components/Tiptap";
+import Tiptap from "@/components/Tiptap";
 import {
   AnnnotationCardWidth,
   AnnotationColor,

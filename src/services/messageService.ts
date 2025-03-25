@@ -1,7 +1,7 @@
 export var Messages;
 (function (Messages) {
-  Messages["CREATE_ANNOTATION"] = "create-annotation-group";
-  Messages["UPDATE_ANNOTATION"] = "update-annotation";
+  Messages["CREATE_ANNOTATION"] = "CREATE_ANNOTATION";
+  Messages["UPDATE_ANNOTATION"] = "UPDATE_ANNOTATION";
   Messages["SAVE_DATA"] = "SAVE_DATA";
   Messages["LOAD_DATA"] = "LOAD_DATA";
   Messages["CLEAR_ANNOTATION_DATA"] = "CLEAR_ANNOTATION_DATA";

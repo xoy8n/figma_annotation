@@ -1,6 +1,6 @@
 {
-  "name": "emotion-description3",
-  "id": "emotion-description3",
+  "name": "test00",
+  "id": "test00",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/ui.html",

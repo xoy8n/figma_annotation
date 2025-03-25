@@ -1,6 +1,6 @@
 import React from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
-import { Button } from "../components/ui/button";
+import { Button } from "@/components/ui/button";
 import Underline from "@tiptap/extension-underline";
 import BulletList from "@tiptap/extension-bullet-list";
 import ListItem from "@tiptap/extension-list-item";
