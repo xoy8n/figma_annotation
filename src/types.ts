@@ -7,32 +7,55 @@ export interface Annotation {
   description: string;
   frameId: string;
   frameName: string;
-  settings: AnnotationSettings;
+  pageName: string; // 페이지 이름 추가
   groupFrameId?: string;
+  settings: AnnotationSettings;
 }
 
 // UI 설정 옵션
 export interface AnnotationSettings {
   color: string;
-  fontSize: 'small' | 'medium';
-  cardWidth: 'small' | 'medium';
+  fontSize: "small" | "medium" | "large";
+  cardWidth: "small" | "medium" | "large";
 }
 
 // UI에 전달되는 메시지 타입 정의
-export type MessageToUI = 
-  | { type: 'FRAME_SELECTED'; frameId: string; frameName: string; annotations: Annotation[]; fileTitle: string; pageName: string; parentFrameName?: string; }
-  | { type: 'NO_FRAME_SELECTED'; annotations: Annotation[]; fileTitle: string; pageName: string; }
-  | { type: 'ANNOTATION_CREATED'; annotation: Annotation; fileTitle: string; pageName: string; parentFrameName?: string; }
-  | { type: 'ANNOTATION_UPDATED'; annotation: Annotation; }
-  | { type: 'ANNOTATIONS_LOADED'; annotations: Annotation[]; }
-  | { type: 'ALL_ANNOTATIONS_LOADED'; annotations: Annotation[]; fileTitle: string; pageName: string; };
+export interface MessageToUI {
+  type:
+    | "FRAME_SELECTED"
+    | "NO_FRAME_SELECTED"
+    | "ANNOTATION_CREATED"
+    | "ANNOTATION_UPDATED"
+    | "ANNOTATION_DELETED"
+    | "ANNOTATIONS_LOADED"
+    | "ALL_ANNOTATIONS_LOADED";
+  frameId?: string;
+  frameName?: string;
+  annotations?: Annotation[];
+  annotation?: Annotation;
+  id?: string;
+  fileTitle?: string;
+  pageName?: string;
+  parentFrameName?: string;
+  allPages?: string[]; // 전체 페이지 목록 추가
+}
 
-export type MessageToPlugin = 
-  | { type: 'CREATE_ANNOTATION'; annotation: Partial<Annotation>; settings: AnnotationSettings }
-  | { type: 'GET_SELECTED_FRAME' }
-  | { type: 'DELETE_ANNOTATION'; id: string }
-  | { type: 'UPDATE_ANNOTATION'; annotation: Annotation }
-  | { type: 'cancel' }
-  | { type: 'SCROLL_TO_FRAME'; frameId: string }
-  | { type: 'SCROLL_TO_ANNOTATION_GROUP'; frameId: string }
-  | { type: 'SCROLL_TO_ANNOTATION'; annotationId: string; frameId: string; number: number }; 
+export interface MessageToPlugin {
+  type:
+    | "CREATE_ANNOTATION"
+    | "DELETE_ANNOTATION"
+    | "UPDATE_ANNOTATION"
+    | "GET_SELECTED_FRAME"
+    | "GET_ALL_ANNOTATIONS"
+    | "SCROLL_TO_FRAME"
+    | "SCROLL_TO_ANNOTATION"
+    | "SCROLL_TO_ANNOTATION_GROUP"
+    | "REORDER_ANNOTATIONS";
+  annotation?: Partial<Annotation>;
+  id?: string;
+  frameId?: string;
+  annotationId?: string;
+  number?: number;
+  settings?: AnnotationSettings;
+  annotations?: Annotation[];
+}

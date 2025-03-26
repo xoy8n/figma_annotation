@@ -1,6 +1,6 @@
-import React from 'react';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 interface EditorProps {
   value: string;
@@ -9,20 +9,29 @@ interface EditorProps {
   placeholder?: string;
 }
 
-export const Editor: React.FC<EditorProps> = ({ value, onChange, onBlur, placeholder }) => {
+export const Editor: React.FC<EditorProps> = ({
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+}) => {
   const modules = {
     toolbar: [
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      ['link'],
-      ['clean']
-    ]
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link"],
+      ["clean"],
+    ],
   };
 
   const formats = [
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link'
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "link",
   ];
 
   return (
