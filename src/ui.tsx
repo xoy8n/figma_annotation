@@ -576,7 +576,7 @@ const App: React.FC = () => {
         frameImages={frameImages}
         hanldeGridMode={getFrameImages}
       />
-      <div className="right-panel flex flex-col flex-1 max-h-full">
+      <div className="right-panel flex flex-col flex-1 max-h-full bg-[#F9F9F9]">
         {annotationGroup.length === 0 ? (
           <div className="flex flex-col flex-1 justify-start items-center mt-10">
             <span className="mt-3 font-bold text-[11px] text-grey-09">
@@ -642,7 +642,7 @@ const App: React.FC = () => {
               </Button>
             </div>
             <Button
-              className="bg-primary text-white px-6 py-2 rounded-[4px] text-[12px] font-bold mt-6 hover:bg-primary/90"
+              className="bg-primary text-black px-6 py-2 rounded-[4px] text-[12px] font-bold mt-6 hover:bg-primary/90"
               onClick={() =>
                 createNewAnnotationGroup({
                   color: defaultAnnotionColor,
