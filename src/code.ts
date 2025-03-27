@@ -185,6 +185,7 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
       try {
         const raw = figma.root.getPluginData(msg.key);
         const parsed = raw ? JSON.parse(raw) : [];
+        console.log(parsed, "parsed");
         annotationGroups = parsed;
         figma.ui.postMessage({
           type,
@@ -246,12 +247,17 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
     }
 
     case "UPDATE_ANNOTATION_ORDER": {
-      const group = annotationGroups.find((g) => g.id === msg.groupId);
-      if (group) {
-        const arr = group.annotations;
-        const movedItem = arr.splice(msg.sourceIndex - 1, 1)[0];
-        arr.splice(msg.destinationIndex - 1, 0, movedItem);
+      const { groupId, sourceIndex, destinationIndex } = msg;
+      const frame = figma.getNodeById(groupId);
+
+      if (frame && frame.type === "FRAME") {
+        const children = [...frame.children];
+        const target = children[sourceIndex];
+        if (target) {
+          frame.insertChild(destinationIndex, target);
+        }
       }
+
       figma.ui.postMessage({
         type,
         message: { result: true },
