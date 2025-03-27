@@ -10,6 +10,8 @@ import Text from "@tiptap/extension-text";
 import Bold from "@tiptap/extension-bold";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
+import Color from "@tiptap/extension-color";
+import TextStyle from "@tiptap/extension-text-style";
 import {
   Tag,
   List,
@@ -22,6 +24,8 @@ const extensions = [
   Document,
   Paragraph,
   Text,
+  TextStyle,
+  Color,
   Bold,
   Underline,
   BulletList.configure({
@@ -89,6 +93,15 @@ const ButtonMenu = ({ editor }) => {
       >
         <Tag />
       </Button>
+      <input
+        type="color"
+        onChange={(e) => {
+          const color = e.target.value;
+          editor.chain().focus().setColor(color).run();
+        }}
+        className="w-[18px] h-[18px] p-0 border-none bg-transparent cursor-pointer"
+        title="Text color"
+      />
     </div>
   );
 };

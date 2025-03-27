@@ -1,59 +1,265 @@
-import { Messages } from "./services/messageService";
-import { createAnnotationGroup } from "./controllers/annotationController";
+figma.showUI(__html__, { width: 600, height: 600 });
 
-figma.showUI(__html__, { height: 700, width: 800 });
+type PluginMessage = {
+  type: string;
+  [key: string]: any;
+};
 
-figma.ui.onmessage = async (msg) => {
-  switch (msg.type) {
-    case Messages.CREATE_ANNOTATION:
-      console.log("CREATE_ANNOTATION");
+let annotationGroups: any[] = [];
+
+figma.ui.onmessage = async (msg: PluginMessage) => {
+  const { type } = msg;
+
+  switch (type) {
+    case "CREATE_ANNOTATION_GROUP": {
+      const selection = figma.currentPage.selection[0];
+
+      function getTopLevelFrame(node: SceneNode): FrameNode | null {
+        let current: BaseNode | null = node;
+
+        while (current && current.parent && current.parent.type !== "PAGE") {
+          current = current.parent;
+        }
+
+        return current?.type === "FRAME" ? (current as FrameNode) : null;
+      }
+
+      if (!selection) {
+        figma.ui.postMessage({
+          type,
+          message: {
+            result: false,
+            errorMessage: "Please select a layer on the canvas.",
+          },
+        });
+        return;
+      }
+
+      const topFrame = getTopLevelFrame(selection);
+
+      if (!topFrame) {
+        figma.ui.postMessage({
+          type,
+          message: {
+            result: false,
+            errorMessage: "Top-level frame not found.",
+          },
+        });
+        return;
+      }
+
+      const newGroupId = topFrame.id;
+      const newGroupName = topFrame.name;
+
+      const existingGroup = annotationGroups.find((g) => g.id === newGroupId);
+
+      if (existingGroup) {
+        const newAnnotation = {
+          id: `annotation-${Date.now()}`,
+          description: {
+            type: "doc",
+            content: [],
+          },
+        };
+
+        existingGroup.annotations.push(newAnnotation);
+
+        figma.ui.postMessage({
+          type: "CREATE_ANNOTATION", // UI가 처리하기 쉽게 type 맞춰줌
+          message: {
+            result: true,
+            annotations: annotationGroups,
+          },
+        });
+        return;
+      }
+
+      // 🆕 새 그룹 생성
+      const defaultAnnotation = {
+        id: `annotation-${Date.now()}`,
+        description: msg.config.description || { type: "doc", content: [] }, // 전달된 설명 사용
+      };
+
+      const newGroup = {
+        id: newGroupId,
+        name: newGroupName,
+        relatedPage: {
+          id: figma.currentPage.id,
+          name: figma.currentPage.name,
+        },
+        annotations: [defaultAnnotation],
+        obsolete: false,
+        ...msg.config,
+      };
+
+      annotationGroups.push(newGroup);
+
+      figma.viewport.scrollAndZoomIntoView([topFrame]);
+
+      figma.ui.postMessage({
+        type,
+        message: {
+          result: true,
+          annotations: annotationGroups,
+          updatedGroup: newGroupId,
+        },
+      });
+
       break;
-    case Messages.UPDATE_ANNOTATION:
-      console.log("UPDATE_ANNOTATION");
+    }
+
+    case "CREATE_ANNOTATION": {
+      const group = annotationGroups.find((g) => g.id === msg.groupId);
+      if (!group) return;
+
+      const newAnnotation = {
+        id: `annotation-${Date.now()}`,
+        description: {
+          type: "doc",
+          content: [],
+        },
+      };
+
+      group.annotations.push(newAnnotation);
+
+      figma.ui.postMessage({
+        type,
+        message: {
+          result: true,
+          annotations: annotationGroups,
+        },
+      });
       break;
-    case Messages.DELETE_ANNOTATION:
-      console.log("DELETE_ANNOTATION");
+    }
+
+    case "UPDATE_ANNOTATION": {
+      const group = annotationGroups.find((g) => g.id === msg.groupId);
+      const annotation = group?.annotations.find(
+        (a) => a.id === msg.annotationId
+      );
+      if (annotation) {
+        annotation[msg.key] = msg.value;
+      }
+      figma.ui.postMessage({ type, message: { result: true } });
       break;
-    case Messages.CREATE_ANNOTATION_GROUP:
-      console.log("CREATE_ANNOTATION_GROUP");
+    }
+
+    case "UPDATE_ANNOTATION_GROUP": {
+      const group = annotationGroups.find((g) => g.id === msg.groupId);
+      if (group) {
+        group[msg.key] = msg.value;
+      }
+      figma.ui.postMessage({ type, message: { result: true } });
       break;
-    case Messages.UPDATE_ANNOTATION_GROUP:
-      console.log("UPDATE_ANNOTATION_GROUP");
+    }
+
+    case "DELETE_ANNOTATION": {
+      const group = annotationGroups.find((g) => g.id === msg.groupId);
+      if (group) {
+        group.annotations = group.annotations.filter(
+          (a) => a.id !== msg.annotation.id
+        );
+      }
+      figma.ui.postMessage({ type, message: { result: true } });
       break;
-    case Messages.DELETE_ANNOTATION_GROUP:
-      console.log("DELETE_ANNOTATION_GROUP");
+    }
+
+    case "DELETE_ANNOTATION_GROUP":
+      annotationGroups = annotationGroups.filter((g) => g.id !== msg.group.id);
+      figma.ui.postMessage({ type, message: { result: true } });
       break;
-    case Messages.MOVE_TO_SELECTION:
-      console.log("MOVE_TO_SELECTION");
+
+    case "SAVE_DATA":
+      try {
+        await figma.root.setPluginData(msg.key, JSON.stringify(msg.data));
+        figma.ui.postMessage({ type, message: { result: true } });
+      } catch (error) {
+        figma.ui.postMessage({
+          type,
+          message: { result: false, errorMessage: String(error) },
+        });
+      }
       break;
-    case Messages.GET_FILE_NAME:
-      console.log("GET_FILE_NAME");
+
+    case "LOAD_DATA":
+      try {
+        const raw = figma.root.getPluginData(msg.key);
+        const parsed = raw ? JSON.parse(raw) : [];
+        annotationGroups = parsed;
+        figma.ui.postMessage({
+          type,
+          message: { result: true, key: msg.key, data: parsed },
+        });
+      } catch (error) {
+        figma.ui.postMessage({
+          type,
+          message: { result: false, errorMessage: String(error) },
+        });
+      }
       break;
-    case Messages.GET_PAGE_NAME:
-      console.log("GET_PAGE_NAME");
+
+    case "CLEAR_ANNOTATION_DATA":
+      await figma.root.setPluginData("annotationGroup", "[]");
+      annotationGroups = [];
+      figma.ui.postMessage({ type, message: {} });
       break;
-    case Messages.SELECTION_CHANGE:
-      console.log("SELECTION_CHANGE");
+
+    case "GET_FILE_NAME":
+      figma.ui.postMessage({
+        type,
+        message: { fileName: figma.root.name },
+      });
       break;
-    case Messages.UPDATE_ANNOTATION_ORDER:
-      console.log("UPDATE_ANNOTATION_ORDER");
+
+    case "GET_PAGE_NAME": {
+      const page = figma.root.findOne((n) => n.id === msg.pageId);
+      figma.ui.postMessage({
+        type,
+        message: {
+          pageId: msg.pageId,
+          pageName: page?.name || "Unknown Page",
+        },
+      });
       break;
-    case Messages.GET_FRAME_IMAGE:
-      console.log("GET_FRAME_IMAGE");
+    }
+
+    case "MOVE_TO_SELECTION": {
+      const groupNode = figma.getNodeById(msg.groupId);
+      if (groupNode) {
+        figma.viewport.scrollAndZoomIntoView([groupNode]);
+      }
       break;
-    case Messages.CHECK_CURRENT_SELECTION:
-      console.log("CHECK_CURRENT_SELECTION");
+    }
+
+    case "CHECK_CURRENT_SELECTION": {
+      const groupNode = figma.getNodeById(msg.groupId);
+      const exists = !!groupNode;
+      figma.ui.postMessage({
+        type,
+        message: {
+          result: exists,
+          groupId: msg.groupId,
+          obsolete: !exists,
+        },
+      });
       break;
-    case Messages.SAVE_DATA:
-      console.log("SAVE_DATA");
+    }
+
+    case "UPDATE_ANNOTATION_ORDER": {
+      const group = annotationGroups.find((g) => g.id === msg.groupId);
+      if (group) {
+        const arr = group.annotations;
+        const movedItem = arr.splice(msg.sourceIndex - 1, 1)[0];
+        arr.splice(msg.destinationIndex - 1, 0, movedItem);
+      }
+      figma.ui.postMessage({
+        type,
+        message: { result: true },
+      });
       break;
-    case Messages.LOAD_DATA:
-      console.log("LOAD_DATA");
-      break;
-    case Messages.CLEAR_ANNOTATION_DATA:
-      console.log("CLEAR_ANNOTATION_DATA");
-      break;
+    }
+
     default:
-      console.log("Unknown message type");
+      console.log("Unhandled message type:", msg.type);
   }
 };

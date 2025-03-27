@@ -21,7 +21,16 @@ import {
 import { supportedColors } from "./interfaces/const";
 import { useDebouncedCallback } from "use-debounce";
 import Fuse from "fuse.js";
-import { Search, Delete, WandSparkles, Grip, MoveUp, Ban } from "lucide-react";
+import {
+  Search,
+  Delete,
+  WandSparkles,
+  Grip,
+  MoveUp,
+  Ban,
+  Plus,
+  Trash,
+} from "lucide-react";
 
 const App: React.FC = () => {
   const [fileName, setFileName] = useState("");
@@ -47,17 +56,15 @@ const App: React.FC = () => {
     AnnnotationCardWidth.SMALL
   );
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showCoomingSoon, setShowCoomingSoon] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [showLoading, setShowLoading] = useState(false);
   let SearchKey;
   (function (SearchKey) {
     SearchKey["groupName"] = "groupName";
-    SearchKey["title"] = "title";
     SearchKey["description"] = "description";
   })(SearchKey || (SearchKey = {}));
   const fuseOption = {
-    keys: [SearchKey.groupName, SearchKey.title, SearchKey.description],
+    keys: [SearchKey.groupName, SearchKey.description],
     includeScore: true,
     includeMatches: true,
     threshold: 0.8,
@@ -101,46 +108,6 @@ const App: React.FC = () => {
       annotationId: currentSelection.annotations[annotationIndex].id,
       key,
       value,
-    });
-  };
-  const updateAnnotationGroupTitle = (newTitle) => {
-    updateAnnotationGroup("name", newTitle);
-    const currentGroupIndex = annotationGroup.findIndex(
-      (_annotation) => _annotation.id === currentSelection.id
-    );
-    setAnnotateGroup((prevState) => {
-      const newState = [...prevState];
-      newState[currentGroupIndex] = Object.assign(
-        Object.assign({}, newState[currentGroupIndex]),
-        { name: newTitle }
-      );
-      return newState;
-    });
-  };
-  const updateAnnotationTitle = (annotationIndex, newTitle) => {
-    updateAnnotation(annotationIndex, "title", newTitle);
-    const groupIndex = annotationGroup.findIndex(
-      (_annotation) => _annotation.id === currentSelectionId
-    );
-    console.log(groupIndex);
-    setAnnotateGroup((prevState) => {
-      const newState = [...prevState];
-      newState[groupIndex] = Object.assign(
-        Object.assign({}, newState[groupIndex]),
-        {
-          annotations: newState[groupIndex].annotations.map(
-            (annotation, index) => {
-              if (index === annotationIndex) {
-                return Object.assign(Object.assign({}, annotation), {
-                  title: newTitle,
-                });
-              }
-              return annotation;
-            }
-          ),
-        }
-      );
-      return newState;
     });
   };
   const updateAnnotationDescription = (annotationIndex, newDescription) => {
@@ -254,7 +221,6 @@ const App: React.FC = () => {
           groupName: group.name,
           index: index,
           id: annotation.id,
-          title: annotation.title.trim(),
           description: extractTextFromNode(annotation.description)
             .join(" ")
             .trim(),
@@ -516,12 +482,6 @@ const App: React.FC = () => {
   const debounced = useDebouncedCallback((type, index, value) => {
     console.log(currentSelectionId);
     switch (type) {
-      case "groupTitle":
-        updateAnnotationGroupTitle(value);
-        break;
-      case "title":
-        updateAnnotationTitle(index, value);
-        break;
       case "description":
         updateAnnotationDescription(index, value);
         break;
@@ -573,8 +533,6 @@ const App: React.FC = () => {
         setCurrentSelectionId={handleGroupSelect}
         createNewAnnotationGroup={createNewAnnotationGroup}
         moveToSelection={moveToSelection}
-        frameImages={frameImages}
-        hanldeGridMode={getFrameImages}
       />
       <div className="right-panel flex flex-col flex-1 max-h-full bg-[#F9F9F9]">
         {annotationGroup.length === 0 ? (
@@ -660,20 +618,7 @@ const App: React.FC = () => {
               <div className="flex flex-row flex-1">
                 <Popover>
                   <PopoverTrigger ref={searchBtnRef} className="outline-none">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="size-4"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                      />
-                    </svg>
+                    <Search />
                   </PopoverTrigger>
                   <PopoverContent
                     className="flex flex-col bg-white w-[300px] ml-6 rounded-md border mb-10"
@@ -695,9 +640,6 @@ const App: React.FC = () => {
                           descriptionMatches.length > 0
                             ? descriptionMatches[0]
                             : null;
-                        const isTitleOnlyMatch =
-                          matches.length === 1 &&
-                          firstMatch.key.includes("title");
                         const isFocused = focusedIndex === index;
                         return (
                           <div
@@ -728,30 +670,21 @@ const App: React.FC = () => {
                                 <div className="flex flex-col items-start gap-1 text-[8px]">
                                   <div className="text-grey-06">
                                     {highlightKeyword(
-                                      `#${annotation.index + 1} ${annotation.title}`,
+                                      `#${annotation.index + 1}`,
                                       keyword
                                     )}
                                   </div>
-                                  {isTitleOnlyMatch ? (
-                                    <div className="text-[8px] text-grey-06">
-                                      {highlightKeyword(
-                                        annotation.description,
-                                        keyword
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <div className="text-[8px] text-grey-06">
-                                      {firstDescriptionMatch
-                                        ? highlightKeyword(
-                                            firstDescriptionMatch.value,
-                                            keyword
-                                          )
-                                        : highlightKeyword(
-                                            firstMatch.value,
-                                            keyword
-                                          )}
-                                    </div>
-                                  )}
+                                  <div className="text-[8px] text-grey-06">
+                                    {firstDescriptionMatch
+                                      ? highlightKeyword(
+                                          firstDescriptionMatch.value,
+                                          keyword
+                                        )
+                                      : highlightKeyword(
+                                          firstMatch.value,
+                                          keyword
+                                        )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -759,22 +692,6 @@ const App: React.FC = () => {
                         );
                       }
                     )}
-                  </PopoverContent>
-                </Popover>
-                <Popover>
-                  <PopoverTrigger
-                    className="p-2"
-                    onMouseEnter={() => setShowCoomingSoon(true)}
-                    onMouseLeave={() => setShowCoomingSoon(false)}
-                  >
-                    <WandSparkles />
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="bg-grey-10 px-2 py-1 rounded-sm popover-panel-with-arrow text-[10px] text-white overflow-visible"
-                    align="start"
-                    side="left"
-                  >
-                    Cooming Soon!
                   </PopoverContent>
                 </Popover>
               </div>
@@ -799,21 +716,12 @@ const App: React.FC = () => {
                     </Button>
                   </div>
                 )}
-                <div className="relative flex flex-col justify-between items-center gap-1 py-1 border-b">
+                <div className="relative flex flex-col justify-between items-center gap-1 py-1 border-b overflow-y-scroll">
                   {currentSelection && currentSelection.obsolete && (
                     <div className="top-0 left-0 z-10 absolute bg-white/[63%] w-full h-full"></div>
                   )}
                   <div className="flex flex-row items-center gap-1 px-4 py-2 w-full">
-                    <Input
-                      key={currentSelection ? currentSelection.id : 0}
-                      defaultValue={
-                        currentSelection ? currentSelection.name : ""
-                      }
-                      onChange={(e) =>
-                        debounced("groupTitle", 0, e.target.value)
-                      }
-                      className="box-content flex-1 border-white hover:border-grey-04 focus:border-primary px-[6px] border rounded-md min-h-6 font-bold text-[12px] text-grey-09 outline-none"
-                    />
+                    <p>{currentSelection?.name}</p>
                     <div className="mx-2 border-r h-4"></div>
                     <Button
                       className="inline-flex justify-center items-center data-[hover]:bg-grey-00 rounded-md w-7 h-7"
@@ -891,33 +799,17 @@ const App: React.FC = () => {
                       </Button>
                     </div>
                     <Button
-                      className="inline-flex justify-center items-center bg-primary data-[hover]:bg-primary/50 px-3 py-1 rounded-md text-white"
+                      className="inline-flex justify-center items-center px-3 py-1 rounded-md text-white"
                       onClick={() => createNewAnnotationGroup()}
                     >
-                      <div className="flex flex-row items-center">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={2}
-                          stroke="currentColor"
-                          className="size-3"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="m12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
+                      <div className="flex flex-row items-center  text-black">
+                        <Plus />
                         <div className="text-[10px]">Add</div>
                       </div>
                     </Button>
                   </div>
-                  <div className="bg-gradient-to-r from-primary to-[#CDB4FF] to-[50%] rounded-sm w-full h-1 overflow-hidden">
-                    <div className="left-right bg-primary w-full h-full progress"></div>
-                  </div>
                   <DragDropContext onDragEnd={handleOnDragEnd}>
-                    <div className="flex flex-col pb-20 overflow-y-scroll">
+                    <div className="flex flex-col pb-20 overflow-y-scroll border-t border-gray-200">
                       <Droppable droppableId="annotations">
                         {(provided) => (
                           <div
@@ -959,23 +851,6 @@ const App: React.FC = () => {
                                           {currentSelection?.obsolete && (
                                             <div className="z-10 absolute bg-white/[63%] w-full h-full"></div>
                                           )}
-                                          <Input
-                                            key={`${annotation.id}`}
-                                            type="text"
-                                            placeholder="Title"
-                                            className="px-2 border rounded-md w-full h-[34px] outline-none"
-                                            defaultValue={annotation.title}
-                                            disabled={
-                                              currentSelection?.obsolete
-                                            }
-                                            onChange={(e) =>
-                                              debounced(
-                                                "title",
-                                                index,
-                                                e.target.value
-                                              )
-                                            }
-                                          />
                                           <Tiptap
                                             key={`${annotation.id}-desc`}
                                             id={annotation.id}
@@ -1018,18 +893,7 @@ const App: React.FC = () => {
       {showDeleteModal && (
         <div className="absolute flex flex-row justify-center items-center w-full h-full">
           <div className="flex flex-col justify-center items-center border-white bg-white bg-opacity-20 shadow-lg backdrop-blur-md border rounded-lg w-[286px] h-[198px]">
-            <svg
-              width="25"
-              height="25"
-              viewBox="0 0 25 25"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M8 5.375V6.5H4.625C4.00368 6.5 3.5 7.00368 3.5 7.625C3.5 8.24632 4.00368 8.75 4.625 8.75H5.075L6.29739 20.9739C6.41241 22.1241 7.38028 23 8.53622 23H16.4638C17.6197 23 18.5876 22.1241 18.7026 20.9739L19.925 8.75H20.375C20.9963 8.75 21.5 8.24632 21.5 7.625C21.5 7.00368 20.9963 6.5 20.375 6.5H17V5.375C17 3.51104 15.489 2 13.625 2H11.375C9.51104 2 8 3.51104 8 5.375ZM11.375 4.25C10.7537 4.25 10.25 4.75368 10.25 5.375V6.5H14.75V5.375C14.75 4.75368 14.2463 4.25 13.625 4.25H11.375ZM9.57566 9.5014C10.1962 9.47038 10.7244 9.94828 10.7554 10.5688L11.1679 18.8188C11.199 19.4394 10.7211 19.9676 10.1005 19.9986C9.47997 20.0296 8.95177 19.5517 8.92074 18.9312L8.50824 10.6812C8.47721 10.0606 8.95511 9.53243 9.57566 9.5014ZM15.4255 9.5014C16.0461 9.53243 16.524 10.0606 16.4929 10.6812L16.0804 18.9312C16.0494 19.5517 15.5212 20.0296 14.9007 19.9986C14.2801 19.9676 13.8022 19.4394 13.8332 18.8188L14.2457 10.5688C14.2768 9.94828 14.805 9.47038 15.4255 9.5014Z"
-                fill="#1B1B1B"
-              />
-            </svg>
+            <Trash />
             <div className="flex flex-col gap-1 mt-6">
               <p className="text-xs">
                 Deleted content{" "}
