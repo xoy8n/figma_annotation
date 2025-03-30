@@ -229,15 +229,18 @@ const App: React.FC = () => {
     });
     return searchArray;
   };
-  const handleOnDragEnd = (result) => {
+  const debouncedHandleOnDragEnd = useDebouncedCallback((result) => {
     if (!result.destination) return;
     if (result.source.index === result.destination.index) return;
+
     const items = Array.from(currentSelection.annotations);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
+
     const currentGroupIndex = annotationGroup.findIndex(
       (_annotation) => _annotation.id === currentSelection.id
     );
+
     setAnnotateGroup((prevState) => {
       const newState = [...prevState];
       newState[currentGroupIndex] = Object.assign(
@@ -246,12 +249,17 @@ const App: React.FC = () => {
       );
       return newState;
     });
+
     sendMessage(Messages.UPDATE_ANNOTATION_ORDER, {
       pageId: currentSelection.relatedPage.id,
       groupId: currentSelection.id,
       sourceIndex: result.source.index + 1,
       destinationIndex: result.destination.index + 1,
     });
+  }, 300); // 300ms 딜레이 설정
+
+  const handleOnDragEnd = (result) => {
+    debouncedHandleOnDragEnd(result);
   };
   useEffect(() => {
     console.log("load data");

@@ -4,9 +4,10 @@ import {
   Plus,
   Square,
   StickyNote,
-  Frame,
-  MoveUp,
+  Folder,
+  CornerDownRight,
   Search,
+  Focus,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
@@ -51,9 +52,9 @@ export default function SidePanelComponent({
   return (
     <div className="left-panel flex flex-col bg-[#F9F9F9] border-r w-44 min-h-full max-h-full">
       <div className="flex flex-row justify-between items-center bg-white px-2 border-b w-full h-10">
-        <div className="flex flex-row flex-1">
-          <Frame />
-          <p className="ml-1 font-bold text-grey-09">{fileName}</p>
+        <div className="flex flex-row flex-1 items-center">
+          <Folder />
+          <p className="ml-2 font-bold text-grey-09">{fileName}</p>
         </div>
       </div>
       <div className="flex flex-col flex-1 overflow-hidden">
@@ -76,7 +77,7 @@ export default function SidePanelComponent({
                   <p className="ml-2 font-bold text-grey-09">{page.pageName}</p>
                 </div>
                 <span className="group-open:rotate-180 hover:bg-black/[2%] p-1 transition">
-                  <svg
+                  {/* <svg
                     fill="none"
                     height="14"
                     shapeRendering="geometricPrecision"
@@ -88,7 +89,7 @@ export default function SidePanelComponent({
                     width="14"
                   >
                     <path d="M6 9l6 6 6-6" />
-                  </svg>
+                  </svg> */}
                 </span>
               </summary>
               {page.annotationGroups.map((annote) => (
@@ -110,7 +111,7 @@ export default function SidePanelComponent({
                             : "text-grey-06"
                         } flex-grow text-left flex flex-row gap-1 font-bold mr-2 items-center overflow-hidden`}
                       >
-                        <MoveUp />
+                        <CornerDownRight />
                         <span className="flex-1 text-[11px] text-ellipsis whitespace-nowrap overflow-hidden">
                           {annote.name}
                         </span>
@@ -119,7 +120,7 @@ export default function SidePanelComponent({
                         onClick={() => moveToSelection(annote.id)}
                         className="flex flex-shrink-0 justify-center items-center hover:bg-black/[3%] p-1 hover:rounded-sm w-6 h-6"
                       >
-                        <Search />
+                        <Focus />
                       </Button>
                     </div>
                   ) : (

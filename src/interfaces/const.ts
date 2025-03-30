@@ -4,21 +4,18 @@ export const supportedFontSizes = {
     badgeSize: 24,
     badgeText: 14,
     desription: 14,
-    padding: 20,
     gap: 8,
   },
   [AnnotationSize.MEDIUM]: {
     badgeSize: 32,
     badgeText: 18,
     desription: 18,
-    padding: 24,
     gap: 10,
   },
   [AnnotationSize.LARGE]: {
     badgeSize: 36,
     badgeText: 21,
     desription: 21,
-    padding: 32,
     gap: 12,
   },
 };

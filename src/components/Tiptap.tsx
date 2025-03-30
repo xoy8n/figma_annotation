@@ -78,21 +78,6 @@ const ButtonMenu = ({ editor }) => {
         <List />
       </Button>
       <div className="border-grey-05 border-l h-[12px]" />
-      <Button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={true}
-        className="w-[18px] h-[18px] flex flex-row items-center justify-center hover:bg-grey-01 disabled:opacity-50"
-      >
-        <LinkIcon />
-      </Button>
-      <div className="border-grey-05 border-l h-[12px]" />
-      <Button
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={true}
-        className="w-[18px] h-[18px] flex flex-row items-center justify-center hover:bg-grey-01 disabled:opacity-50"
-      >
-        <Tag />
-      </Button>
       <input
         type="color"
         onChange={(e) => {
