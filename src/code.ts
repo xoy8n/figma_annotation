@@ -1653,25 +1653,9 @@ function updateGroupFrameColor(frame: FrameNode, colorValue: number) {
     titleGroup.fills = [
       { type: "SOLID", color: { r: 245 / 255, g: 245 / 255, b: 245 / 255 } },
     ];
-
-    const descriptionNode = titleGroup.findOne(
-      (node) =>
-        node.type === "TEXT" &&
-        node.getPluginData("type") === "title_description"
-    ) as TextNode;
-
-    if (descriptionNode) {
-      // Title의 Description 텍스트 색상 업데이트
-      descriptionNode.fills = [
-        {
-          type: "SOLID",
-          color: headerColor,
-        },
-      ];
-    }
   }
 
-  // 모든 자식 주석 요소들 색상 업데이트
+  // 모든 자식 주석 요소들 처리
   frame.children.forEach((child) => {
     if (
       child.type === "FRAME" &&
@@ -1695,48 +1679,6 @@ function updateGroupFrameColor(frame: FrameNode, colorValue: number) {
             color: { r: 245 / 255, g: 245 / 255, b: 245 / 255 },
           },
         ];
-
-        const indexNode = indexContainer.findOne(
-          (node) =>
-            node.type === "TEXT" &&
-            node.getPluginData("type") === "annotation_index"
-        ) as TextNode;
-
-        if (indexNode) {
-          indexNode.fills = [
-            {
-              type: "SOLID",
-              color: headerColor,
-            },
-          ];
-        }
-      } else {
-        // 이전 구조와의 호환성 유지 (기존 레이아웃)
-        const contentGroup = child.findOne(
-          (node) =>
-            node.type === "FRAME" &&
-            node.getPluginData("type") === "annotation_content"
-        ) as FrameNode;
-
-        if (contentGroup) {
-          // 컨텐츠 그룹 배경색 제거
-          contentGroup.fills = [];
-
-          const indexNode = contentGroup.findOne(
-            (node) =>
-              node.type === "TEXT" &&
-              node.getPluginData("type") === "annotation_index"
-          ) as TextNode;
-
-          if (indexNode) {
-            indexNode.fills = [
-              {
-                type: "SOLID",
-                color: headerColor,
-              },
-            ];
-          }
-        }
       }
 
       // 컨텐츠 그룹 찾기
@@ -1772,7 +1714,7 @@ function updateGroupFrameColor(frame: FrameNode, colorValue: number) {
     )
     .forEach((badge) => {
       if (badge.type === "FRAME") {
-        // 배지 색상 업데이트
+        // 배지 색상만 업데이트
         badge.fills = [{ type: "SOLID", color: headerColor }];
       }
     });
