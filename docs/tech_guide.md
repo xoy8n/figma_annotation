@@ -108,10 +108,12 @@ Figma에서 주석(Annotation)을 생성/관리하기 위한 플러그인 기능
      ```
 - **상태 관리**:
   - `annotationGroup`: 로컬 상태 먼저 업데이트 후 서버 전송
+  - `debouncedHandleOnDragEnd`: 디바운스 적용으로 다중 호출 방지 (300ms)
 - **서버 통신 여부**: ✅ 있음
 - **테스트 항목**:
   - 순서 변경 시 메시지 전송
   - 드래그 처리 후 UI 정확히 반영
+  - 디바운스 동작 확인
 
 ---
 
@@ -122,7 +124,9 @@ Figma에서 주석(Annotation)을 생성/관리하기 위한 플러그인 기능
 - **처리 흐름**:
   1. 해당 그룹 찾기
   2. 메모리상의 주석 순서 업데이트
-  3. Figma 캔버스 상의 주석 순서 업데이트 (`insertChild`)
+  3. Figma 캔버스 상의 주석 순서 업데이트
+     - 기존 방식: `insertChild(index, node)` 호출로 단일 요소 이동
+     - 개선 방식: 메모리의 주석 순서에 맞게 모든 노드 재정렬
   4. 인덱스 번호와 배지 인덱스 업데이트
 - **Figma API 사용**:
   - `figma.getNodeById`
@@ -130,7 +134,7 @@ Figma에서 주석(Annotation)을 생성/관리하기 위한 플러그인 기능
   - `updateAnnotationIndices`, `updateBadgeIndices`
 - **테스트 항목**:
   - 실제 레이어 순서 반영
-  - 인덱스 번호 정확히 업데이트
+  - 인덱스 번호 정확히 업데이트 (위→아래, 아래→위 이동 모두 정상 작동)
   - 배지 번호 업데이트 확인
 
 ---
@@ -304,7 +308,7 @@ Figma에서 주석(Annotation)을 생성/관리하기 위한 플러그인 기능
      - 그룹 프레임 찾기
      - 주석 프레임 찾기
      - 내용 그룹 찾기
-     - 텍스트 노드 업데이트
+     - 텍스트 노드 업데이트 (`applyRichTextFormatting`)
 - **Figma API 사용**:
   - `figma.getNodeById`
   - `node.findOne`

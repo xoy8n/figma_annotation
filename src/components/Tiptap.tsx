@@ -78,15 +78,39 @@ const ButtonMenu = ({ editor }) => {
         <List />
       </Button>
       <div className="border-grey-05 border-l h-[12px]" />
-      <input
-        type="color"
-        onChange={(e) => {
-          const color = e.target.value;
-          editor.chain().focus().setColor(color).run();
-        }}
-        className="w-[18px] h-[18px] p-0 border-none bg-transparent cursor-pointer"
-        title="Text color"
-      />
+      <div className="border-grey-05 border-l h-[12px]" />
+      <button
+        onClick={() => editor.chain().focus().setColor("#FF0000").run()}
+        className={
+          editor.isActive("textStyle", { color: "#FF0000" }) ? "is-active" : ""
+        }
+      >
+        Red
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setColor("#001AFF").run()}
+        className={
+          editor.isActive("textStyle", { color: "#001AFF" }) ? "is-active" : ""
+        }
+      >
+        Blue
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setColor("#22C55E").run()}
+        className={
+          editor.isActive("textStyle", { color: "#22C55E" }) ? "is-active" : ""
+        }
+      >
+        Green
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setColor("#000000").run()}
+        className={
+          editor.isActive("textStyle", { color: "#000000" }) ? "is-active" : ""
+        }
+      >
+        Black
+      </button>
     </div>
   );
 };
