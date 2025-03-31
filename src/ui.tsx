@@ -3,11 +3,6 @@ import * as ReactDOM from "react-dom/client";
 import "./ui.css";
 import { Messages, sendMessage } from "./services/messageService";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
 import SidePanelComponent from "@/components/sidePanel";
@@ -26,7 +21,7 @@ import {
   Delete,
   WandSparkles,
   Grip,
-  MoveUp,
+  CornerDownRight,
   Ban,
   Plus,
   Trash,
@@ -498,9 +493,13 @@ const App: React.FC = () => {
     }
   }, 500);
   const moveToSelection = (id = currentSelectionId) => {
+    const group = annotationGroup.find((g) => g.id === id);
+    if (!group) return;
+
     sendMessage(Messages.MOVE_TO_SELECTION, {
       annotations: annotationGroup,
       groupId: id,
+      pageId: group.relatedPage.id,
     });
   };
   const escapeRegExp = (string) => {
@@ -623,85 +622,91 @@ const App: React.FC = () => {
         ) : (
           <>
             <div className="flex flex-row px-4 border-b w-full h-10">
-              <div className="flex flex-row flex-1">
-                <Popover>
-                  <PopoverTrigger ref={searchBtnRef} className="outline-none">
-                    <Search />
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="flex flex-col bg-white w-[300px] ml-6 rounded-md border mb-10"
-                    align="start"
-                    side="bottom"
-                  >
-                    {searchResult.length === 0 && (
-                      <div className="px-2 py-2 text-[10px] text-grey-06">
-                        No matching annotations found
-                      </div>
-                    )}
-                    {searchResult.map(
-                      ({ item: annotation, matches }, index) => {
-                        const firstMatch = matches[0];
-                        const descriptionMatches = matches.filter((match) =>
-                          match.key.includes("description")
-                        );
-                        const firstDescriptionMatch =
-                          descriptionMatches.length > 0
-                            ? descriptionMatches[0]
-                            : null;
-                        const isFocused = focusedIndex === index;
-                        return (
-                          <div
-                            className={`hover:bg-black/[3%] px-2 py-2 ${
-                              isFocused ? "bg-black/[3%]" : ""
-                            }`}
-                            key={annotation.id}
-                            onClick={() => {
-                              setCurrentSelectionId(annotation.groupId);
-                              setKeyword("");
-                            }}
-                          >
-                            <div className="flex flex-row gap-1">
-                              <div>
-                                <MoveUp />
-                              </div>
-                              <div className="flex flex-col items-start gap-1">
-                                <div className="flex flex-row text-[10px]">
-                                  <span className="font-bold text-grey-06">
-                                    <span className="font-bold text-grey-09">
-                                      {highlightKeyword(
-                                        annotation.groupName,
-                                        keyword
-                                      )}
-                                    </span>
-                                  </span>
+              <div className="flex flex-row flex-1 items-center">
+                <div className="relative w-full">
+                  <div className="flex items-center">
+                    <Search className="absolute left-4" />
+                    <Input
+                      type="text"
+                      placeholder="Search annotations..."
+                      value={keyword}
+                      onChange={(e) => setKeyword(e.target.value)}
+                      className="h-8 text-[12px] pl-10"
+                      autoFocus
+                    />
+                  </div>
+                  {keyword && (
+                    <div className="absolute z-50 flex flex-col bg-white w-full rounded-md border shadow-lg mt-1">
+                      {searchResult.length === 0 && (
+                        <div className="px-2 py-2 text-[10px] text-grey-06">
+                          No matching annotations found
+                        </div>
+                      )}
+                      {searchResult.map(
+                        ({ item: annotation, matches }, index) => {
+                          const firstMatch = matches[0];
+                          const descriptionMatches = matches.filter((match) =>
+                            match.key.includes("description")
+                          );
+                          const firstDescriptionMatch =
+                            descriptionMatches.length > 0
+                              ? descriptionMatches[0]
+                              : null;
+                          const isFocused = focusedIndex === index;
+                          return (
+                            <div
+                              className={`hover:bg-black/[3%] px-2 py-2 ${
+                                isFocused ? "bg-black/[3%]" : ""
+                              }`}
+                              key={annotation.id}
+                              onClick={() => {
+                                setCurrentSelectionId(annotation.groupId);
+                                setKeyword("");
+                              }}
+                            >
+                              <div className="flex flex-row gap-1">
+                                <div>
+                                  <CornerDownRight />
                                 </div>
-                                <div className="flex flex-col items-start gap-1 text-[8px]">
-                                  <div className="text-grey-06">
-                                    {highlightKeyword(
-                                      `#${annotation.index + 1}`,
-                                      keyword
-                                    )}
-                                  </div>
-                                  <div className="text-[8px] text-grey-06">
-                                    {firstDescriptionMatch
-                                      ? highlightKeyword(
-                                          firstDescriptionMatch.value,
-                                          keyword
-                                        )
-                                      : highlightKeyword(
-                                          firstMatch.value,
+                                <div className="flex flex-col items-start gap-1">
+                                  <div className="flex flex-row text-[10px]">
+                                    <span className="font-bold text-grey-06">
+                                      <span className="font-bold text-grey-09">
+                                        {highlightKeyword(
+                                          annotation.groupName,
                                           keyword
                                         )}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-col items-start gap-1 text-[8px]">
+                                    <div className="text-grey-06">
+                                      {highlightKeyword(
+                                        `#${annotation.index + 1}`,
+                                        keyword
+                                      )}
+                                    </div>
+                                    <div className="text-[8px] text-grey-06">
+                                      {firstDescriptionMatch
+                                        ? highlightKeyword(
+                                            firstDescriptionMatch.value,
+                                            keyword
+                                          )
+                                        : highlightKeyword(
+                                            firstMatch.value,
+                                            keyword
+                                          )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      }
-                    )}
-                  </PopoverContent>
-                </Popover>
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             {annotationGroup.length > 0 && (
@@ -728,15 +733,17 @@ const App: React.FC = () => {
                   {currentSelection && currentSelection.obsolete && (
                     <div className="top-0 left-0 z-10 absolute bg-white/[63%] w-full h-full"></div>
                   )}
-                  <div className="flex flex-row items-center gap-1 px-4 py-2 w-full">
-                    <p>{currentSelection?.name}</p>
+                  <div className="flex flex-row justify-between items-center gap-1 px-4 py-2 w-full">
+                    <p className="font-bold text-[20px]">
+                      {currentSelection?.name}
+                    </p>
                     <div className="mx-2 border-r h-4"></div>
-                    <Button
+                    {/* <Button
                       className="inline-flex justify-center items-center data-[hover]:bg-grey-00 rounded-md w-7 h-7"
                       onClick={() => moveToSelection()}
                     >
                       <Search />
-                    </Button>
+                    </Button> */}
                     <Button
                       className="inline-flex justify-center items-center data-[hover]:bg-grey-00 rounded-md w-7 h-7 text-grey-08"
                       onClick={() => setShowDeleteModal(true)}
