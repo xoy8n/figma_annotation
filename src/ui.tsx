@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import SidePanelComponent from "@/components/sidePanel";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Tiptap from "@/components/Tiptap";
+import SearchPopover from "@/components/SearchPopover";
 import {
   AnnnotationCardWidth,
   AnnotationColor,
@@ -648,90 +649,13 @@ const App: React.FC = () => {
           <>
             <div className="flex flex-row px-4 border-b w-full h-10">
               <div className="flex flex-row flex-1 items-center">
-                <div className="relative w-full">
-                  <div className="flex items-center">
-                    <Search className="absolute left-4" />
-                    <Input
-                      type="text"
-                      placeholder="검색어를 입력하세요."
-                      value={keyword}
-                      onChange={(e) => setKeyword(e.target.value)}
-                      className="h-8 text-[12px] pl-10"
-                      autoFocus
-                    />
-                  </div>
-                  {keyword && (
-                    <div className="absolute z-50 flex flex-col bg-white w-full rounded-md border shadow-lg mt-1">
-                      {searchResult.length === 0 && (
-                        <div className="px-2 py-2 text-[10px] text-grey-06">
-                          No matching annotations found
-                        </div>
-                      )}
-                      {searchResult.map(
-                        ({ item: annotation, matches }, index) => {
-                          const firstMatch = matches[0];
-                          const descriptionMatches = matches.filter((match) =>
-                            match.key.includes("description")
-                          );
-                          const firstDescriptionMatch =
-                            descriptionMatches.length > 0
-                              ? descriptionMatches[0]
-                              : null;
-                          const isFocused = focusedIndex === index;
-                          return (
-                            <div
-                              className={`hover:bg-black/[3%] px-2 py-2 ${
-                                isFocused ? "bg-black/[3%]" : ""
-                              }`}
-                              key={annotation.id}
-                              onClick={() => {
-                                setCurrentSelectionId(annotation.groupId);
-                                setKeyword("");
-                              }}
-                            >
-                              <div className="flex flex-row gap-1">
-                                <div>
-                                  <CornerDownRight />
-                                </div>
-                                <div className="flex flex-col items-start gap-1">
-                                  <div className="flex flex-row text-[10px]">
-                                    <span className="font-bold text-grey-06">
-                                      <span className="font-bold text-grey-09">
-                                        {highlightKeyword(
-                                          annotation.groupName,
-                                          keyword
-                                        )}
-                                      </span>
-                                    </span>
-                                  </div>
-                                  <div className="flex flex-col items-start gap-1 text-[8px]">
-                                    <div className="text-grey-06">
-                                      {highlightKeyword(
-                                        `#${annotation.index + 1}`,
-                                        keyword
-                                      )}
-                                    </div>
-                                    <div className="text-[8px] text-grey-06">
-                                      {firstDescriptionMatch
-                                        ? highlightKeyword(
-                                            firstDescriptionMatch.value,
-                                            keyword
-                                          )
-                                        : highlightKeyword(
-                                            firstMatch.value,
-                                            keyword
-                                          )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-                  )}
-                </div>
+                <SearchPopover
+                  keyword={keyword}
+                  setKeyword={setKeyword}
+                  searchResult={searchResult}
+                  setCurrentSelectionId={setCurrentSelectionId}
+                  highlightKeyword={highlightKeyword}
+                />
               </div>
             </div>
             {annotationGroup.length > 0 && (
