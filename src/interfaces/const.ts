@@ -21,7 +21,7 @@ export const supportedFontSizes = {
 };
 export const supportedColors = {
   [AnnotationColor.RED]: "bg-subRed-01",
-  [AnnotationColor.PURPLE]: "bg-primary",
+  [AnnotationColor.BLUE]: "bg-primary",
   [AnnotationColor.BLACK]: "bg-black",
 };
 export const supportedCardWidth = {

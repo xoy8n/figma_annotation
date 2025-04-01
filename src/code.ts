@@ -108,9 +108,6 @@ async function findOrCreateGroupFrame(group: any): Promise<FrameNode | null> {
     groupFrame.x = topFrame.width - cardWidth - 20; // 우측에서 카드 너비만큼 안쪽으로
     groupFrame.y = 20; // 상단에서 약간 아래로
     groupFrame.resize(cardWidth, 300);
-    // groupFrame.fills = [
-    //   { type: "SOLID", color: { r: 1, g: 1, b: 1 }, opacity: 0.8 },
-    // ];
 
     // 레이아웃 모드 설정 - 세로 배치
     groupFrame.layoutMode = "VERTICAL";
@@ -152,12 +149,12 @@ function getColorByValue(colorValue: number): {
   switch (colorValue) {
     case AnnotationColor.RED:
       return { r: 0.93, g: 0.37, b: 0.37 }; // RED
-    case AnnotationColor.PURPLE:
-      return { r: 0.7, g: 0.5, b: 0.9 }; // PURPLE
+    case AnnotationColor.BLUE:
+      return { r: 0.0, g: 0.1, b: 1.0 }; // BLUE
     case AnnotationColor.BLACK:
       return { r: 0, g: 0, b: 0 }; // BLACK
     default:
-      return { r: 0.7, g: 0.5, b: 0.9 }; // 기본값: PURPLE
+      return { r: 0.0, g: 0.1, b: 1.0 }; // 기본값: BLUE
   }
 }
 
@@ -212,7 +209,7 @@ async function createAnnotationBadge(
   badge.resize(badgeSize, badgeSize);
 
   // 배지 색상 설정
-  let badgeColor = getColorByValue(AnnotationColor.PURPLE); // 기본 보라색
+  let badgeColor = getColorByValue(AnnotationColor.BLUE); // 기본 보라색
   if (color !== undefined) {
     badgeColor = getColorByValue(color);
   }
@@ -249,7 +246,7 @@ async function createAnnotationBadge(
 }
 
 // 배지 인덱스 업데이트 함수
-function updateBadgeIndices(groupId: string) {
+async function updateBadgeIndices(groupId: string) {
   const group = annotationGroups.find((g) => g.id === groupId);
   if (!group) return;
 
@@ -259,8 +256,26 @@ function updateBadgeIndices(groupId: string) {
     "개의 주석"
   );
 
-  // 모든 노드에서 이 그룹에 해당하는 배지 찾기
-  figma.currentPage
+  // 그룹과 관련된 페이지 찾기
+  let targetPage: PageNode | null = null;
+  if (group.relatedPage && group.relatedPage.id) {
+    // 관련 페이지가 있으면 해당 페이지 찾기
+    const pageNode = figma.root.findOne(
+      (node) => node.type === "PAGE" && node.id === group.relatedPage.id
+    ) as PageNode;
+
+    if (pageNode) {
+      targetPage = pageNode;
+    }
+  }
+
+  // 관련 페이지가 없거나 찾지 못한 경우 현재 페이지 사용
+  if (!targetPage) {
+    targetPage = figma.currentPage;
+  }
+
+  // 해당 페이지에서 배지 찾기
+  targetPage
     .findAll((node) => node.getPluginData("type") === "annotation_badge")
     .forEach((badge) => {
       const annotationId = badge.getPluginData("annotationId");
@@ -291,8 +306,25 @@ function updateBadgeIndices(groupId: string) {
 }
 
 // 배지 삭제 함수
-function removeAnnotationBadge(annotationId: string) {
-  figma.currentPage
+async function removeAnnotationBadge(annotationId: string, groupId?: string) {
+  let targetPage = figma.currentPage;
+
+  // 그룹 ID가 제공된 경우 해당 그룹의 페이지 찾기
+  if (groupId) {
+    const group = findGroup(groupId);
+    if (group && group.relatedPage && group.relatedPage.id) {
+      const pageNode = figma.root.findOne(
+        (node) => node.type === "PAGE" && node.id === group.relatedPage.id
+      ) as PageNode;
+
+      if (pageNode) {
+        targetPage = pageNode;
+      }
+    }
+  }
+
+  // 해당 페이지에서 배지 찾기
+  targetPage
     .findAll(
       (node) =>
         node.getPluginData("type") === "annotation_badge" &&
@@ -317,7 +349,6 @@ async function createAnnotationFrame(
 
   // 컨테이너 스타일 설정
   annotationFrame.layoutMode = "HORIZONTAL";
-  // annotationFrame.itemSpacing = 8;
   annotationFrame.fills = []; // 배경색 제거
   annotationFrame.strokes = [
     {
@@ -357,7 +388,8 @@ function createContentGroup(
 
   // 그룹 스타일 설정
   contentGroup.layoutMode = "VERTICAL";
-  contentGroup.itemSpacing = 4;
+  contentGroup.verticalPadding = 10;
+  contentGroup.horizontalPadding = 10;
   contentGroup.fills = []; // 배경색 제거 (투명 배경 유지)
 
   // 너비 계산 - 전체 너비의 약 80%를 차지하도록 조정
@@ -382,12 +414,26 @@ function createIndexContainer(
 
   // 스타일 설정
   indexContainer.layoutMode = "VERTICAL";
-  indexContainer.itemSpacing = 4;
   indexContainer.primaryAxisAlignItems = "CENTER"; // 세로 중앙 정렬
   indexContainer.counterAxisAlignItems = "CENTER"; // 가로 중앙 정렬
   indexContainer.fills = [
     { type: "SOLID", color: { r: 245 / 255, g: 245 / 255, b: 245 / 255 } },
   ]; // 배경색 설정
+  indexContainer.verticalPadding = 10;
+  indexContainer.horizontalPadding = 10;
+
+  indexContainer.strokes = [
+    {
+      type: "SOLID",
+      color: {
+        r: 224 / 255,
+        g: 224 / 255,
+        b: 224 / 255,
+      },
+    },
+  ];
+  indexContainer.strokeWeight = 0;
+  indexContainer.strokeRightWeight = 1;
 
   // 너비 계산 - 전체 너비의 약 20%를 차지하도록 조정
   const indexWidth = Math.round(frameWidth * 0.2);
@@ -593,7 +639,7 @@ function extractTextFromDescription(description: any): string {
 }
 
 // 모든 주석 요소의 인덱스 번호 업데이트
-function updateAnnotationIndices(groupFrame: FrameNode) {
+async function updateAnnotationIndices(groupFrame: FrameNode) {
   // annotation 타입의 프레임만 필터링
   const annotationFrames = groupFrame.children.filter(
     (node) =>
@@ -601,7 +647,9 @@ function updateAnnotationIndices(groupFrame: FrameNode) {
   ) as FrameNode[];
 
   // 필터링된 주석 프레임들의 인덱스 번호 업데이트
-  annotationFrames.forEach((child, index) => {
+  for (let index = 0; index < annotationFrames.length; index++) {
+    const child = annotationFrames[index];
+
     // 인덱스 컨테이너 찾기
     const indexContainer = child.findOne(
       (node) =>
@@ -618,6 +666,8 @@ function updateAnnotationIndices(groupFrame: FrameNode) {
       ) as TextNode;
 
       if (indexNode) {
+        // 폰트 로드 추가
+        await figma.loadFontAsync({ family: "Inter", style: "Regular" });
         indexNode.characters = `${index + 1}`;
       }
     } else {
@@ -637,6 +687,8 @@ function updateAnnotationIndices(groupFrame: FrameNode) {
         ) as TextNode;
 
         if (indexNode) {
+          // 폰트 로드 추가
+          await figma.loadFontAsync({ family: "Inter", style: "Regular" });
           indexNode.characters = `${index + 1}`;
         }
       }
@@ -644,7 +696,7 @@ function updateAnnotationIndices(groupFrame: FrameNode) {
 
     // 주석 프레임 이름 업데이트
     child.name = `Annotation ${index + 1}`;
-  });
+  }
 }
 
 // Title 그룹 생성 함수
@@ -661,7 +713,6 @@ async function createTitleGroup(
 
   // 스타일 설정
   titleContainer.layoutMode = "VERTICAL";
-  titleContainer.itemSpacing = 4;
   titleContainer.primaryAxisAlignItems = "CENTER"; // 세로 중앙 정렬
   titleContainer.counterAxisAlignItems = "CENTER"; // 가로 중앙 정렬
   titleContainer.fills = [
@@ -909,8 +960,6 @@ async function handleCreateAnnotationGroup(msg: PluginMessage) {
     msg.config?.color
   );
 
-  figma.viewport.scrollAndZoomIntoView([topFrame]);
-
   return sendResponse(msg.type, true, {
     annotations: annotationGroups,
     updatedGroup: newGroupId,
@@ -994,14 +1043,14 @@ async function handleDeleteAnnotation(msg: PluginMessage) {
     }
 
     // 남아있는 주석 프레임들의 인덱스 번호 업데이트
-    updateAnnotationIndices(groupFrame);
+    await updateAnnotationIndices(groupFrame);
   }
 
   // 배지도 함께 삭제
-  removeAnnotationBadge(msg.annotation.id);
+  await removeAnnotationBadge(msg.annotation.id, msg.groupId);
 
   // 남아있는 annotation들의 배지 인덱스 업데이트
-  updateBadgeIndices(group.id);
+  await updateBadgeIndices(group.id);
 
   return sendResponse(msg.type, true);
 }
@@ -1017,9 +1066,9 @@ async function handleDeleteAnnotationGroup(msg: PluginMessage) {
     ) as FrameNode;
     if (groupFrame && groupFrame.type === "FRAME") {
       // 그룹에 속한 모든 주석의 배지 삭제
-      groupToDelete.annotations.forEach((annotation) => {
-        removeAnnotationBadge(annotation.id);
-      });
+      for (const annotation of groupToDelete.annotations) {
+        await removeAnnotationBadge(annotation.id, msg.group.id);
+      }
 
       // 타이틀 컨테이너 찾기 및 삭제 (명시적으로 처리)
       const titleContainer = groupFrame.findOne(
@@ -1470,10 +1519,10 @@ async function handleUpdateAnnotationOrder(msg: PluginMessage) {
     }
 
     // 순서가 바뀐 후 인덱스 번호 업데이트
-    updateAnnotationIndices(groupFrame);
+    await updateAnnotationIndices(groupFrame);
 
     // 배지 인덱스도 업데이트
-    updateBadgeIndices(group.id);
+    await updateBadgeIndices(group.id);
   } else {
     // 기존 방식 (자식 요소와 주석 수가 일치하지 않을 경우의 예외 처리)
     // Title 컨테이너를 제외한 주석 프레임만 필터링
@@ -1494,10 +1543,10 @@ async function handleUpdateAnnotationOrder(msg: PluginMessage) {
       }
 
       // 순서가 바뀐 후 인덱스 번호 업데이트
-      updateAnnotationIndices(groupFrame);
+      await updateAnnotationIndices(groupFrame);
 
       // 배지 인덱스도 업데이트
-      updateBadgeIndices(group.id);
+      await updateBadgeIndices(group.id);
     }
   }
 
@@ -1514,9 +1563,26 @@ async function handleMoveToSelection(msg: PluginMessage) {
     }
   }
 
+  // groupNode를 찾은 후 해당 노드의 최상위 프레임으로 이동
   const groupNode = figma.getNodeById(msg.groupId);
-  if (groupNode) {
-    figma.viewport.scrollAndZoomIntoView([groupNode]);
+  if (groupNode && groupNode.type === "FRAME") {
+    // 최상위 프레임 찾기
+    const topFrame = getTopLevelFrame(groupNode as SceneNode);
+    if (topFrame) {
+      figma.viewport.scrollAndZoomIntoView([topFrame]);
+    } else {
+      // 최상위 프레임을 찾지 못한 경우 그룹 노드로 이동 (기존 동작)
+      figma.viewport.scrollAndZoomIntoView([groupNode]);
+    }
+  } else if (groupNode) {
+    // 프레임이 아닌 노드인 경우도 최상위 프레임 찾기 시도
+    const topFrame = getTopLevelFrame(groupNode as SceneNode);
+    if (topFrame) {
+      figma.viewport.scrollAndZoomIntoView([topFrame]);
+    } else {
+      // 최상위 프레임을 찾지 못한 경우 그룹 노드로 이동 (기존 동작)
+      figma.viewport.scrollAndZoomIntoView([groupNode]);
+    }
   }
 }
 
@@ -1614,6 +1680,9 @@ figma.ui.onmessage = async (msg: PluginMessage) => {
         break;
       case "MOVE_TO_SELECTION":
         await handleMoveToSelection(msg);
+        break;
+      case "MOVE_TO_ANNOTATION":
+        await handleMoveToAnnotation(msg);
         break;
       case "CHECK_CURRENT_SELECTION":
         await handleCheckCurrentSelection(msg);
@@ -1786,7 +1855,6 @@ async function updateGroupFrameSize(
   if (property === "size") {
     // 폰트 크기 업데이트
     const fontSize = getFontSizeByValue(value);
-    const gap = supportedFontSizes[value].gap;
 
     // 모든 텍스트 노드에 대해 폰트 로드
     await figma.loadFontAsync({ family: "Inter", style: "Regular" });
@@ -1832,8 +1900,6 @@ async function updateGroupFrameSize(
         child.type === "FRAME" &&
         child.getPluginData("type") === "annotation"
       ) {
-        child.itemSpacing = gap;
-
         // 너비 고정, 높이 자동 조정
         child.layoutSizingHorizontal = "FIXED";
         child.layoutSizingVertical = "HUG";
@@ -1856,11 +1922,241 @@ async function updateGroupFrameSize(
         ) as FrameNode;
 
         if (indexContainer && contentGroup) {
-          // ... rest of the existing size update code for indexContainer and contentGroup ...
+          // 사용 가능한 너비 계산 (annotationFrame 패딩 고려)
+          const frameAvailableWidth =
+            child.width - (child.paddingLeft + child.paddingRight);
+
+          // 인덱스 컨테이너와 내용 그룹 너비 비율 계산 (20:80)
+          const indexWidth = Math.round(frameAvailableWidth * 0.2);
+          const contentWidth = frameAvailableWidth - indexWidth; // 정확한 계산을 위해 나머지 너비 할당
+
+          // 내용 그룹 크기 조정
+          contentGroup.layoutSizingHorizontal = "FIXED";
+          contentGroup.layoutSizingVertical = "HUG";
+          contentGroup.resize(contentWidth, contentGroup.height);
+
+          // 설명 텍스트 업데이트
+          const descNode = contentGroup.findOne(
+            (node) =>
+              node.type === "TEXT" &&
+              node.getPluginData("type") === "annotation_description"
+          ) as TextNode;
+
+          if (descNode) {
+            // 폰트 크기 업데이트
+            descNode.fontSize = fontSize;
+
+            // 텍스트 노드 크기 조정 (contentGroup 패딩 고려)
+            const textAvailableWidth =
+              contentWidth -
+              (contentGroup.paddingLeft + contentGroup.paddingRight);
+
+            descNode.layoutSizingHorizontal = "FIXED";
+            descNode.resize(textAvailableWidth, descNode.height);
+          }
+
+          // 인덱스 컨테이너 크기 조정
+          indexContainer.layoutSizingHorizontal = "FIXED";
+          indexContainer.layoutSizingVertical = "HUG";
+          indexContainer.resize(indexWidth, indexContainer.height);
+
+          // 인덱스 노드 찾기
+          const indexNode = indexContainer.findOne(
+            (node) =>
+              node.type === "TEXT" &&
+              node.getPluginData("type") === "annotation_index"
+          ) as TextNode;
+
+          if (indexNode && descNode) {
+            // 인덱스 노드 업데이트
+            indexNode.fontSize = fontSize;
+
+            // 인덱스 노드 크기 조정 (indexContainer 패딩 고려)
+            const indexNodeAvailableWidth =
+              indexWidth -
+              (indexContainer.paddingLeft + indexContainer.paddingRight);
+
+            indexNode.resize(indexNodeAvailableWidth, descNode.height);
+
+            // 인덱스 노드를 수직 중앙에 배치
+            indexNode.y = (indexContainer.height - indexNode.height) / 2;
+          }
+
+          // contentGroup의 높이에 맞게 indexContainer 높이 조정
+          indexContainer.resize(indexWidth, contentGroup.height);
+        } else if (contentGroup) {
+          // 이전 구조와의 호환성 유지 (기존 레이아웃)
+          // 사용 가능한 너비 계산 (annotationFrame 패딩 고려)
+          const frameAvailableWidth =
+            cardWidth - (frame.paddingLeft + frame.paddingRight);
+
+          contentGroup.layoutSizingHorizontal = "FIXED";
+          contentGroup.layoutSizingVertical = "HUG";
+          contentGroup.resize(frameAvailableWidth, contentGroup.height);
+
+          // 설명 텍스트 찾기
+          const descNode = contentGroup.findOne(
+            (node) =>
+              node.type === "TEXT" &&
+              node.getPluginData("type") === "annotation_description"
+          ) as TextNode;
+
+          if (descNode) {
+            // 텍스트 노드 크기 조정 (contentGroup 패딩 고려)
+            const textAvailableWidth =
+              frameAvailableWidth -
+              (contentGroup.paddingLeft + contentGroup.paddingRight);
+
+            descNode.layoutSizingHorizontal = "FIXED";
+            descNode.resize(textAvailableWidth, descNode.height);
+          }
         }
       }
     }
   } else if (property === "cardWidth") {
-    // ... rest of the existing cardWidth update code ...
+    // 모든 자식 요소의 너비도 업데이트
+    for (const child of frame.children) {
+      if (
+        child.type === "FRAME" &&
+        child.getPluginData("type") === "annotation"
+      ) {
+        // 사용 가능한 너비 계산 (annotationFrame 내에서)
+        const annotationAvailableWidth =
+          cardWidth - (frame.paddingLeft + frame.paddingRight);
+
+        // annotationFrame 크기 조정
+        child.layoutSizingHorizontal = "FIXED";
+        child.layoutSizingVertical = "HUG";
+        child.resize(annotationAvailableWidth, child.height);
+
+        // 인덱스 컨테이너 찾기
+        const indexContainer = child.findOne(
+          (node) =>
+            node.type === "FRAME" &&
+            node.getPluginData("type") === "annotation_index_container"
+        ) as FrameNode;
+
+        // 내용 그룹 찾기
+        const contentGroup = child.findOne(
+          (node) =>
+            node.type === "FRAME" &&
+            node.getPluginData("type") === "annotation_content"
+        ) as FrameNode;
+
+        if (indexContainer && contentGroup) {
+          // 사용 가능한 너비 계산 (annotationFrame 패딩 고려)
+          const frameAvailableWidth =
+            annotationAvailableWidth - (child.paddingLeft + child.paddingRight);
+
+          // 인덱스 컨테이너와 내용 그룹 너비 비율 계산 (30:70)
+          const indexWidth = Math.round(frameAvailableWidth * 0.2);
+          const contentWidth = frameAvailableWidth - indexWidth; // 정확한 계산을 위해 나머지 너비 할당
+
+          // 인덱스 컨테이너 크기 조정
+          indexContainer.layoutSizingHorizontal = "FIXED";
+          indexContainer.layoutSizingVertical = "HUG";
+          indexContainer.resize(indexWidth, indexContainer.height);
+
+          // 내용 그룹 크기 조정
+          contentGroup.layoutSizingHorizontal = "FIXED";
+          contentGroup.layoutSizingVertical = "HUG";
+          contentGroup.resize(contentWidth, contentGroup.height);
+
+          // 설명 텍스트 찾기
+          const descNode = contentGroup.findOne(
+            (node) =>
+              node.type === "TEXT" &&
+              node.getPluginData("type") === "annotation_description"
+          ) as TextNode;
+
+          if (descNode) {
+            // 텍스트 노드 크기 조정 (contentGroup 패딩 고려)
+            const textAvailableWidth =
+              contentWidth -
+              (contentGroup.paddingLeft + contentGroup.paddingRight);
+
+            descNode.layoutSizingHorizontal = "FIXED";
+            descNode.resize(textAvailableWidth, descNode.height);
+          }
+
+          // 인덱스 노드 찾기
+          const indexNode = indexContainer.findOne(
+            (node) =>
+              node.type === "TEXT" &&
+              node.getPluginData("type") === "annotation_index"
+          ) as TextNode;
+
+          if (indexNode && descNode) {
+            // 인덱스 노드의 높이를 텍스트 노드의 높이와 동일하게 설정
+            const indexNodeAvailableWidth =
+              indexWidth -
+              (indexContainer.paddingLeft + indexContainer.paddingRight);
+
+            indexNode.resize(indexNodeAvailableWidth, descNode.height);
+
+            // 인덱스 노드를 수직 중앙에 배치
+            indexNode.y = (indexContainer.height - indexNode.height) / 2;
+          }
+
+          // contentGroup의 높이에 맞게 indexContainer 높이 조정
+          indexContainer.resize(indexWidth, contentGroup.height);
+        } else if (contentGroup) {
+          // 이전 구조와의 호환성 유지 (기존 레이아웃)
+          // 사용 가능한 너비 계산 (annotationFrame 패딩 고려)
+          const frameAvailableWidth =
+            annotationAvailableWidth - (child.paddingLeft + child.paddingRight);
+
+          contentGroup.layoutSizingHorizontal = "FIXED";
+          contentGroup.layoutSizingVertical = "HUG";
+          contentGroup.resize(frameAvailableWidth, contentGroup.height);
+
+          // 설명 텍스트 찾기
+          const descNode = contentGroup.findOne(
+            (node) =>
+              node.type === "TEXT" &&
+              node.getPluginData("type") === "annotation_description"
+          ) as TextNode;
+
+          if (descNode) {
+            // 텍스트 노드 크기 조정 (contentGroup 패딩 고려)
+            const textAvailableWidth =
+              frameAvailableWidth -
+              (contentGroup.paddingLeft + contentGroup.paddingRight);
+
+            descNode.layoutSizingHorizontal = "FIXED";
+            descNode.resize(textAvailableWidth, descNode.height);
+          }
+        }
+      }
+    }
+  }
+}
+
+// MOVE_TO_ANNOTATION 메시지 핸들러
+async function handleMoveToAnnotation(msg: PluginMessage) {
+  // 페이지 ID가 제공된 경우 먼저 해당 페이지로 이동
+  if (msg.pageId) {
+    const pageNode = figma.root.findOne((node) => node.id === msg.pageId);
+    if (pageNode && pageNode.type === "PAGE") {
+      figma.currentPage = pageNode as PageNode;
+    }
+  }
+
+  // 해당 주석의 배지 찾기
+  const badges = figma.currentPage.findAll(
+    (node) =>
+      node.getPluginData("type") === "annotation_badge" &&
+      node.getPluginData("annotationId") === msg.annotationId
+  );
+
+  if (badges.length > 0) {
+    // 배지를 뷰포트로 가져오기
+    figma.viewport.scrollAndZoomIntoView(badges);
+  } else {
+    // 배지를 찾지 못한 경우 그룹 프레임으로 이동 (대체 옵션)
+    const groupNode = figma.getNodeById(msg.groupId);
+    if (groupNode) {
+      figma.viewport.scrollAndZoomIntoView([groupNode]);
+    }
   }
 }

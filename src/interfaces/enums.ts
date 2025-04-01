@@ -7,7 +7,7 @@ export var AnnotationSize;
 export var AnnotationColor;
 (function (AnnotationColor) {
   AnnotationColor[(AnnotationColor["RED"] = 0)] = "RED";
-  AnnotationColor[(AnnotationColor["PURPLE"] = 1)] = "PURPLE";
+  AnnotationColor[(AnnotationColor["BLUE"] = 1)] = "BLUE";
   AnnotationColor[(AnnotationColor["BLACK"] = 2)] = "BLACK";
 })(AnnotationColor || (AnnotationColor = {}));
 export var AnnnotationCardWidth;

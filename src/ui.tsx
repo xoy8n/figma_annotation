@@ -42,7 +42,7 @@ const App: React.FC = () => {
   const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
   const [defaultAnnotionColor, setDefaultAnnotionColor] = useState(
-    AnnotationColor.PURPLE
+    AnnotationColor.BLUE
   );
   const [defaultAnnotionSize, setDefaultAnnotionSize] = useState(
     AnnotationSize.SMALL
@@ -74,7 +74,7 @@ const App: React.FC = () => {
     });
   };
   const createNewAnnotationGroup = ({
-    color = AnnotationColor.PURPLE,
+    color = AnnotationColor.BLUE,
     size = AnnotationSize.SMALL,
     cardWidth = AnnnotationCardWidth.SMALL,
   } = {}) => {
@@ -494,7 +494,10 @@ const App: React.FC = () => {
   }, 500);
   const moveToSelection = (id = currentSelectionId) => {
     const group = annotationGroup.find((g) => g.id === id);
-    if (!group) return;
+    if (!group) {
+      console.log("group없읒ㅁ!");
+      return;
+    }
 
     sendMessage(Messages.MOVE_TO_SELECTION, {
       annotations: annotationGroup,
@@ -502,6 +505,28 @@ const App: React.FC = () => {
       pageId: group.relatedPage.id,
     });
   };
+
+  const moveToAnnotation = (groupId, annotationId) => {
+    const group = annotationGroup.find((g) => g.id === groupId);
+    if (!group) {
+      console.log("그룹을 찾을 수 없습니다!");
+      return;
+    }
+
+    const annotation = group.annotations.find((a) => a.id === annotationId);
+    if (!annotation) {
+      console.log("해당 주석을 찾을 수 없습니다!");
+      return;
+    }
+
+    sendMessage(Messages.MOVE_TO_ANNOTATION, {
+      annotations: annotationGroup,
+      groupId: groupId,
+      annotationId: annotationId,
+      pageId: group.relatedPage.id,
+    });
+  };
+
   const escapeRegExp = (string) => {
     return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   };
@@ -628,7 +653,7 @@ const App: React.FC = () => {
                     <Search className="absolute left-4" />
                     <Input
                       type="text"
-                      placeholder="Search annotations..."
+                      placeholder="검색어를 입력하세요."
                       value={keyword}
                       onChange={(e) => setKeyword(e.target.value)}
                       className="h-8 text-[12px] pl-10"
@@ -738,17 +763,12 @@ const App: React.FC = () => {
                       {currentSelection?.name}
                     </p>
                     <div className="mx-2 border-r h-4"></div>
-                    {/* <Button
-                      className="inline-flex justify-center items-center data-[hover]:bg-grey-00 rounded-md w-7 h-7"
-                      onClick={() => moveToSelection()}
-                    >
-                      <Search />
-                    </Button> */}
                     <Button
-                      className="inline-flex justify-center items-center data-[hover]:bg-grey-00 rounded-md w-7 h-7 text-grey-08"
+                      className="inline-flex justify-center items-center hover:bg-black/[3%] rounded-md w-auto h-7 text-grey-08"
                       onClick={() => setShowDeleteModal(true)}
                     >
                       <Delete />
+                      Delete
                     </Button>
                   </div>
                   <div className="flex flex-row justify-between items-center gap-2 mb-2 px-4 w-full">
@@ -814,10 +834,10 @@ const App: React.FC = () => {
                       </Button>
                     </div>
                     <Button
-                      className="inline-flex justify-center items-center px-3 py-1 rounded-md text-white"
+                      className="inline-flex justify-center items-center px-3 py-1 hover:bg-black/[3%] rounded-md text-white"
                       onClick={() => createNewAnnotationGroup()}
                     >
-                      <div className="flex flex-row items-center  text-black">
+                      <div className="flex flex-row items-center text-black">
                         <Plus />
                         <div className="text-[10px]">Add</div>
                       </div>
@@ -857,7 +877,13 @@ const App: React.FC = () => {
                                             <Grip />
                                           </div>
                                           <span
-                                            className={`flex flex-row justify-center items-center ${supportedColors[currentSelection?.color]} rounded-xl w-5 h-5 text-[10px] text-white`}
+                                            className={`flex flex-row justify-center items-center ${supportedColors[currentSelection?.color]} rounded-xl w-5 h-5 text-[10px] text-white cursor-pointer`}
+                                            onClick={() =>
+                                              moveToAnnotation(
+                                                currentSelection.id,
+                                                annotation.id
+                                              )
+                                            }
                                           >
                                             {`${index + 1}`}
                                           </span>
@@ -879,7 +905,7 @@ const App: React.FC = () => {
                                             <div className="z-10 absolute bg-white/[63%] w-full h-full"></div>
                                           )}
                                           <Button
-                                            className="inline-flex justify-center items-center data-[hover]:bg-grey-03 rounded-md w-7 h-7"
+                                            className="inline-flex justify-center items-center hover:bg-black/[3%] rounded-md w-7 h-7"
                                             onClick={() =>
                                               deleteAnnoation(index, annotation)
                                             }
