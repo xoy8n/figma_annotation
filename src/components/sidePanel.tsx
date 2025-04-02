@@ -58,7 +58,7 @@ export default function SidePanelComponent({
         </div>
       </div>
       <div className="flex flex-col flex-1 overflow-hidden">
-        <div className="flex-1 overflow-y-scroll">
+        <div className="flex-1 overflow-y-scroll w-40">
           {annotationGroup.map((page) => (
             <details
               key={page.pageId}

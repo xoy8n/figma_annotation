@@ -54,6 +54,8 @@ const App: React.FC = () => {
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [showLoading, setShowLoading] = useState(false);
   const [refreshTime, setRefreshTime] = useState(Date.now());
+  const [groupNameEdit, setGroupNameEdit] = useState("");
+  const [isEditingName, setIsEditingName] = useState(false);
   let SearchKey;
   (function (SearchKey) {
     SearchKey["groupName"] = "groupName";
@@ -81,6 +83,7 @@ const App: React.FC = () => {
   } = {}) => {
     sendMessage(Messages.CREATE_ANNOTATION_GROUP, {
       annotations: annotationGroup,
+      groupId: currentSelectionId,
       config: {
         color,
         size,
@@ -297,6 +300,9 @@ const App: React.FC = () => {
       (group) => group.id === currentSelectionId
     );
     setCurrentSelection(currentSelection);
+    if (currentSelection) {
+      setGroupNameEdit(currentSelection.name || "");
+    }
   }, [currentSelectionId, annotationGroup]);
   useEffect(() => {
     console.log("currentSelection", currentSelection);
@@ -501,6 +507,9 @@ const App: React.FC = () => {
       case "description":
         updateAnnotationDescription(index, value);
         break;
+      case "name":
+        updateGroupName(value);
+        break;
       default:
         break;
     }
@@ -571,6 +580,21 @@ const App: React.FC = () => {
 
   const refreshAnnotations = () => {
     sendMessage(Messages.SYNC_ALL_ANNOTATIONS);
+  };
+
+  const updateGroupName = (name) => {
+    updateAnnotationGroup("name", name);
+    const currentGroupIndex = annotationGroup.findIndex(
+      (_annotation) => _annotation.id === currentSelectionId
+    );
+    setAnnotateGroup((prevState) => {
+      const newState = [...prevState];
+      newState[currentGroupIndex] = Object.assign(
+        Object.assign({}, newState[currentGroupIndex]),
+        { name: name }
+      );
+      return newState;
+    });
   };
 
   return (
@@ -683,7 +707,7 @@ const App: React.FC = () => {
               </Button>
             </div>
             {annotationGroup.length > 0 && (
-              <div className="box-border flex flex-col flex-1 overflow-hidden">
+              <div className="box-border flex flex-col overflow-hidden">
                 {currentSelection && currentSelection.obsolete && (
                   <div className="flex flex-row items-center bg-[#FF5D5D]/[8%] px-3 py-2 h-10">
                     <div className="flex flex-row flex-1 items-center gap-3">
@@ -707,9 +731,35 @@ const App: React.FC = () => {
                     <div className="top-0 left-0 z-10 absolute bg-white/[63%] w-full h-full"></div>
                   )}
                   <div className="flex flex-row justify-between items-center gap-1 px-4 py-2 w-full">
-                    <p className="font-bold text-[20px]">
-                      {currentSelection?.name}
-                    </p>
+                    {isEditingName ? (
+                      <input
+                        className="font-bold text-[20px] px-1 py-0.5 border rounded outline-none w-full"
+                        value={groupNameEdit}
+                        onChange={(e) => {
+                          setGroupNameEdit(e.target.value);
+                          debounced("name", null, e.target.value);
+                        }}
+                        onBlur={() => {
+                          setIsEditingName(false);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            setIsEditingName(false);
+                          } else if (e.key === "Escape") {
+                            setGroupNameEdit(currentSelection?.name || "");
+                            setIsEditingName(false);
+                          }
+                        }}
+                        autoFocus
+                      />
+                    ) : (
+                      <p
+                        className="font-bold text-[20px] cursor-pointer hover:bg-black/[3%] px-1 py-0.5 rounded"
+                        onClick={() => setIsEditingName(true)}
+                      >
+                        {currentSelection?.name}
+                      </p>
+                    )}
                     <Button
                       className="inline-flex justify-center items-center hover:bg-black/[3%] rounded-md w-20 h-8 text-grey-08 text-[12px]"
                       onClick={() => setShowDeleteModal(true)}

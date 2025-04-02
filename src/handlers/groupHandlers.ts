@@ -46,7 +46,7 @@ export async function handleCreateAnnotationGroup(msg: any) {
   }
 
   const newGroupId = topFrame.id;
-  const newGroupName = topFrame.name;
+  let newGroupName = topFrame.name;
 
   const existingGroup = findGroup(newGroupId);
 
