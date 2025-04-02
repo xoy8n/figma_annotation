@@ -235,8 +235,8 @@ export async function updateGroupFrameSize(
           const frameAvailableWidth =
             child.width - (child.paddingLeft + child.paddingRight);
 
-          // 인덱스 컨테이너와 내용 그룹 너비 비율 계산 (20:80)
-          const indexWidth = Math.round(frameAvailableWidth * 0.2);
+          // 인덱스 컨테이너와 내용 그룹 너비 비율 계산 (10:90)
+          const indexWidth = Math.round(frameAvailableWidth * 0.1);
           const contentWidth = frameAvailableWidth - indexWidth; // 정확한 계산을 위해 나머지 너비 할당
 
           // 인덱스 컨테이너 설정
@@ -320,7 +320,7 @@ export async function updateGroupFrameSize(
             child.width - (child.paddingLeft + child.paddingRight);
 
           // 인덱스 컨테이너와 내용 그룹 너비 비율 계산 (20:80)
-          const indexWidth = Math.round(frameAvailableWidth * 0.2);
+          const indexWidth = Math.round(frameAvailableWidth * 0.1);
           const contentWidth = frameAvailableWidth - indexWidth; // 정확한 계산을 위해 나머지 너비 할당
 
           // 인덱스 컨테이너 설정

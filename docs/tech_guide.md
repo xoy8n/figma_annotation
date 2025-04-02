@@ -511,8 +511,8 @@ Figma에서 주석(Annotation)을 생성/관리하기 위한 플러그인 기능
 - **프레임 구성**:
 
   - `annotationFrame`: 수평(HORIZONTAL) 레이아웃의 부모 프레임
-    - `indexContainer`: 인덱스 번호를 포함하는 왼쪽 컨테이너 (전체 너비의 정확히 20%)
-    - `contentGroup`: 주석 내용을 포함하는 오른쪽 컨테이너 (전체 너비의 정확히 80%)
+    - `indexContainer`: 인덱스 번호를 포함하는 왼쪽 컨테이너 (전체 너비의 정확히 10%)
+    - `contentGroup`: 주석 내용을 포함하는 오른쪽 컨테이너 (전체 너비의 정확히 90%)
 
 - **레이아웃 속성**:
   - `annotationFrame.layoutMode = "HORIZONTAL"`: 자식 요소들이 수평으로 배치됨
@@ -636,8 +636,8 @@ Figma는 2023년부터 페이지를 동적으로 로드하는 방식으로 변�
 - **프레임 구성**:
 
   - `annotationFrame`: 수평(HORIZONTAL) 레이아웃의 부모 프레임
-    - `indexContainer`: 인덱스 번호를 포함하는 왼쪽 컨테이너 (전체 너비의 정확히 20%)
-    - `contentGroup`: 주석 내용을 포함하는 오른쪽 컨테이너 (전체 너비의 정확히 80%)
+    - `indexContainer`: 인덱스 번호를 포함하는 왼쪽 컨테이너 (전체 너비의 정확히 10%)
+    - `contentGroup`: 주석 내용을 포함하는 오른쪽 컨테이너 (전체 너비의 정확히 90%)
 
 - **레이아웃 속성**:
   - `annotationFrame.layoutMode = "HORIZONTAL"`: 자식 요소들이 수평으로 배치됨

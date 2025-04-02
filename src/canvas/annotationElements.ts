@@ -75,7 +75,7 @@ export function createContentGroup(
   contentGroup.counterAxisSizingMode = "FIXED"; // 너비는 고정
   contentGroup.verticalPadding = 10;
   contentGroup.horizontalPadding = 10;
-  contentGroup.fills = []; // 배경색 제거 (투명 배경 유지)
+  contentGroup.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }]; // 흰색 배경으로 변경 (#FFFFFF)
 
   // 너비 설정 - 전달받은 너비를 그대로 사용
   contentGroup.layoutSizingHorizontal = "FIXED";
@@ -451,8 +451,8 @@ export async function createAnnotationComponents(
 
   // 정확한 비율 계산 - 전체 너비에서 패딩 고려
   const totalContentWidth = cardWidth; // 프레임의 좌우 패딩 고려
-  const indexWidth = Math.round(totalContentWidth * 0.2); // 정확히 20%
-  const contentWidth = totalContentWidth - indexWidth; // 나머지 80%
+  const indexWidth = Math.round(totalContentWidth * 0.1); // 정확히 10%
+  const contentWidth = totalContentWidth - indexWidth; // 나머지 90%
 
   // 인덱스 컨테이너 생성 - 정확한 너비 전달
   const indexContainer = createIndexContainer(annotationId, indexWidth);

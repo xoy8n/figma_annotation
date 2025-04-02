@@ -112,9 +112,9 @@ figma_annotation/
 
 ```
 annotationFrame (HORIZONTAL layout)
-├─ indexContainer (VERTICAL layout, 정확히 20% 너비)
+├─ indexContainer (VERTICAL layout, 정확히 10% 너비)
 │   └─ indexNode (번호 텍스트)
-└─ contentGroup (VERTICAL layout, 정확히 80% 너비)
+└─ contentGroup (VERTICAL layout, 정확히 90% 너비)
     └─ descriptionNode (리치 텍스트)
 ```
 

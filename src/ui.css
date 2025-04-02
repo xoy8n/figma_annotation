@@ -2,10 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 기본 스타일 리셋 강화 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  font: 12px sans-serif;
+  font:
+    12px "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
   text-align: center;
-  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: var(--figma-color-bg);
+  color: var(--figma-color-text);
+}
+
+/* 스크롤바 통일 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* 픽셀 스냅 관련 수정 */
+.figma-component {
+  transform: translateZ(0);
 }
 
 .popover-panel-with-arrow {
