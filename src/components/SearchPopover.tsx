@@ -77,11 +77,11 @@ const SearchPopover: React.FC<SearchPopoverProps> = ({
   return (
     <div className="relative w-full">
       <div className="flex items-center">
-        <Search className="absolute left-4" />
+        <Search className="absolute left-4" size={16} />
         <Input
           ref={inputRef}
           type="text"
-          placeholder="검색어를 입력하세요."
+          placeholder="검색어를 입력하세요!"
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           className="h-8 text-[12px] pl-10"

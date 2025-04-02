@@ -51,7 +51,7 @@ export default function SidePanelComponent({
 
   return (
     <div className="left-panel flex flex-col bg-[#F9F9F9] border-r w-44 min-h-full max-h-full">
-      <div className="flex flex-row justify-between items-center bg-white px-2 border-b w-full h-10">
+      <div className="flex flex-row justify-between items-center px-2 py-3 border-b w-full">
         <div className="flex flex-row flex-1 items-center">
           <Folder />
           <p className="ml-2 font-bold text-grey-09">{fileName}</p>
@@ -77,7 +77,7 @@ export default function SidePanelComponent({
                   <p className="ml-2 font-bold text-grey-09">{page.pageName}</p>
                 </div>
                 <span className="group-open:rotate-180 hover:bg-black/[2%] p-1 transition">
-                  {/* <svg
+                  <svg
                     fill="none"
                     height="14"
                     shapeRendering="geometricPrecision"
@@ -89,7 +89,7 @@ export default function SidePanelComponent({
                     width="14"
                   >
                     <path d="M6 9l6 6 6-6" />
-                  </svg> */}
+                  </svg>
                 </span>
               </summary>
               {page.annotationGroups.map((annote) => (

@@ -1,6 +1,6 @@
 {
-  "name": "test00",
-  "id": "test00",
+  "name": "emo-description",
+  "id": "1489092580848024459",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/ui.html",

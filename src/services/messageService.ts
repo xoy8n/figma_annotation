@@ -17,6 +17,7 @@ export var Messages;
   Messages["CREATE_ANNOTATION_GROUP"] = "CREATE_ANNOTATION_GROUP";
   Messages["GET_FRAME_IMAGE"] = "GET_FRAME_IMAGE";
   Messages["CHECK_CURRENT_SELECTION"] = "CHECK_CURRENT_SELECTION";
+  Messages["SYNC_ALL_ANNOTATIONS"] = "SYNC_ALL_ANNOTATIONS";
 })(Messages || (Messages = {}));
 export const sendMessage = (type, param = {}) => {
   parent.postMessage({ pluginMessage: Object.assign({ type }, param) }, "*");

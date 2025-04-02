@@ -3,8 +3,6 @@ import * as ReactDOM from "react-dom/client";
 import "./ui.css";
 import { Messages, sendMessage } from "./services/messageService";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
 import SidePanelComponent from "@/components/sidePanel";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import Tiptap from "@/components/Tiptap";
@@ -26,6 +24,7 @@ import {
   Ban,
   Plus,
   Trash,
+  RefreshCw,
 } from "lucide-react";
 
 const App: React.FC = () => {
@@ -54,6 +53,7 @@ const App: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [showLoading, setShowLoading] = useState(false);
+  const [refreshTime, setRefreshTime] = useState(Date.now());
   let SearchKey;
   (function (SearchKey) {
     SearchKey["groupName"] = "groupName";
@@ -277,6 +277,9 @@ const App: React.FC = () => {
       key: "annotationGroup",
       data: annotationGroup,
     });
+    if (annotationGroup.length > 0) {
+      setRefreshTime(Date.now());
+    }
   }, [annotationGroup]);
   useEffect(() => {
     if (groupedByPage.length === 0) return;
@@ -425,6 +428,15 @@ const App: React.FC = () => {
         case Messages.UPDATE_ANNOTATION_GROUP:
           setShowLoading(false);
           break;
+        case Messages.SYNC_ALL_ANNOTATIONS:
+          if (result) {
+            console.log("Annotations synchronized successfully");
+            setAnnotateGroup(message.annotations);
+          } else {
+            setErrorMessage(message.errorMessage);
+            console.error(message.errorMessage);
+          }
+          break;
         default:
           break;
       }
@@ -557,6 +569,10 @@ const App: React.FC = () => {
     setCurrentSelectionId(groupId);
   };
 
+  const refreshAnnotations = () => {
+    sendMessage(Messages.SYNC_ALL_ANNOTATIONS);
+  };
+
   return (
     <div className="flex flex-row w-full min-h-full max-h-full">
       <SidePanelComponent
@@ -571,7 +587,7 @@ const App: React.FC = () => {
         {annotationGroup.length === 0 ? (
           <div className="flex flex-col flex-1 justify-start items-center mt-10">
             <span className="mt-3 font-bold text-[11px] text-grey-09">
-              Please select 1 frame and create your annotations
+              Please select 1 layer and create description
             </span>
             <div className="flex flex-row gap-1 mt-10">
               <Button
@@ -633,7 +649,7 @@ const App: React.FC = () => {
               </Button>
             </div>
             <Button
-              className="bg-primary text-black px-6 py-2 rounded-[4px] text-[12px] font-bold mt-6 hover:bg-primary/90"
+              className="text-black px-6 py-2 rounded-[4px] text-[12px] hover:bg-black/[3%] font-bold mt-6"
               onClick={() =>
                 createNewAnnotationGroup({
                   color: defaultAnnotionColor,
@@ -642,12 +658,12 @@ const App: React.FC = () => {
                 })
               }
             >
-              Create an Annotation
+              Add Description
             </Button>
           </div>
         ) : (
           <>
-            <div className="flex flex-row px-4 border-b w-full h-10">
+            <div className="flex flex-row px-4 py-2 border-b w-full items-center">
               <div className="flex flex-row flex-1 items-center">
                 <SearchPopover
                   keyword={keyword}
@@ -657,6 +673,14 @@ const App: React.FC = () => {
                   highlightKeyword={highlightKeyword}
                 />
               </div>
+              <Button
+                className="flex items-center justify-center h-8 w-Auto p-2 ml-2 rounded-md hover:bg-black/[3%] text-[12px]"
+                onClick={refreshAnnotations}
+                title="동기화"
+              >
+                <RefreshCw size={16} />
+                Refresh
+              </Button>
             </div>
             {annotationGroup.length > 0 && (
               <div className="box-border flex flex-col flex-1 overflow-hidden">
@@ -686,9 +710,8 @@ const App: React.FC = () => {
                     <p className="font-bold text-[20px]">
                       {currentSelection?.name}
                     </p>
-                    <div className="mx-2 border-r h-4"></div>
                     <Button
-                      className="inline-flex justify-center items-center hover:bg-black/[3%] rounded-md w-auto h-7 text-grey-08"
+                      className="inline-flex justify-center items-center hover:bg-black/[3%] rounded-md w-20 h-8 text-grey-08 text-[12px]"
                       onClick={() => setShowDeleteModal(true)}
                     >
                       <Delete />
@@ -761,9 +784,9 @@ const App: React.FC = () => {
                       className="inline-flex justify-center items-center px-3 py-1 hover:bg-black/[3%] rounded-md text-white"
                       onClick={() => createNewAnnotationGroup()}
                     >
-                      <div className="flex flex-row items-center text-black">
+                      <div className="flex flex-row items-center text-black text-[12px]">
                         <Plus />
-                        <div className="text-[10px]">Add</div>
+                        Add
                       </div>
                     </Button>
                   </div>
@@ -817,7 +840,7 @@ const App: React.FC = () => {
                                             <div className="z-10 absolute bg-white/[63%] w-full h-full"></div>
                                           )}
                                           <Tiptap
-                                            key={`${annotation.id}-desc`}
+                                            key={`${annotation.id}-desc-${refreshTime}`}
                                             id={annotation.id}
                                             content={annotation.description}
                                             onUpdate={onUpdate}
@@ -876,7 +899,7 @@ const App: React.FC = () => {
                 Cancel
               </Button>
               <Button
-                className="w-20 bg-subRed-01 text-white px-6 py-2 font-bold rounded-md"
+                className="w-20 bg-subRed-01 text-white px-6 py-2 font-bold rounded-md text-[12px]"
                 onClick={() => deleteAnnotationGroup()}
               >
                 Delete
