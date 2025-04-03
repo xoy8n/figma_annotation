@@ -436,6 +436,7 @@ Figma에서 주석(Annotation)을 생성/관리하기 위한 플러그인 기능
      - `color`: `updateGroupFrameColor` (배지 색상 변경)
      - `size`: `updateGroupFrameSize` (글꼴 크기, 배지 크기 변경)
      - `cardWidth`: `updateGroupFrameSize` (카드 너비 변경)
+     - `name`: 그룹 이름 변경
   4. 모든 주석 요소들의 크기 및 위치 업데이트
 - **Figma API 사용**:
   - `figma.getNodeById`
@@ -445,11 +446,56 @@ Figma에서 주석(Annotation)을 생성/관리하기 위한 플러그인 기능
   - 색상 변경 확인
   - 크기 변경 확인
   - 카드 너비 변경 확인
+  - 그룹 이름 변경 확인
   - 레이아웃 업데이트 확인
 
 ---
 
-## ✅ 기능 11: SYNC_ANNOTATION_DESCRIPTIONS
+## ✅ 기능 11: EDIT_ANNOTATION_GROUP_NAME (그룹 이름 편집)
+
+### 📁 프론트엔드 명세
+
+- **파일 경로**: `src/ui.tsx`
+- **사용 컴포넌트**: 인라인 편집 가능한 텍스트 필드
+- **UI 동작 흐름**:
+  1. 그룹 이름 클릭 시 편집 모드 전환
+  2. 텍스트 필드에서 이름 수정
+  3. Enter 키 누르거나 포커스 잃으면 변경 사항 저장
+  4. Escape 키 누르면 변경 취소
+  5. `debounced("name", null, value)` 함수 호출로 지연된 업데이트
+- **상태 관리**:
+  - `groupNameEdit`: 편집 중인 그룹 이름
+  - `isEditingName`: 편집 모드 여부
+- **서버 통신 여부**: ✅ 있음
+- **테스트 항목**:
+  - 편집 모드 전환 확인
+  - 이름 변경 후 UI 및 서버 상태 업데이트
+  - 키보드 단축키 동작 확인
+  - 디바운스 작동 확인
+
+---
+
+### ⚙️ 백엔드 명세
+
+- **파일 경로**:
+  - `src/code.ts` → 메시지 라우팅
+  - `src/handlers/groupHandlers.ts` → 그룹 속성 업데이트 핸들러
+- **수신 메시지 타입**: `UPDATE_ANNOTATION_GROUP` (key="name")
+- **처리 흐름**:
+  1. `code.ts`에서 메시지 수신 및 `handleUpdateAnnotationGroup` 호출
+  2. `handlers/groupHandlers.ts`에서 그룹 찾기 및 메모리 상태 업데이트
+  3. `updateAnnotationGroup(msg.groupId, msg.key, msg.value)` 호출
+  4. 플러그인 데이터 업데이트: `frameNode.setPluginData(msg.key, JSON.stringify(msg.value))`
+- **Figma API 사용**:
+  - `figma.getNodeById`
+  - `setPluginData`
+- **테스트 항목**:
+  - 이름 변경 성공 여부
+  - 메모리 및 Figma 캔버스 상태 일치 여부
+
+---
+
+## ✅ 기능 12: SYNC_ANNOTATION_DESCRIPTIONS
 
 ### 📁 프론트엔드 명세
 
